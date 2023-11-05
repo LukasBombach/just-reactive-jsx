@@ -44,7 +44,7 @@ const el = render({
 
 console.debug(p(el));
 
-console.debug("\n✨ update ✨\n");
+console.debug("\n\n✨✨✨\n\n");
 $id.set("moon") && $text.set("hello moon") && tick();
 
 console.debug(p(el));
