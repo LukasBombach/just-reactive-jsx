@@ -12,8 +12,10 @@ function render(
   { type, props }: ReactElement,
   {
     setAttr,
+    setChild,
   }: {
     setAttr: (el: HTMLElement, key: string, val: any) => void;
+    setChild: (el: HTMLElement, val: any) => void;
   }
 ) {
   if (typeof type !== "string") throw new Error("not yet implemented");
@@ -27,9 +29,7 @@ function render(
   }
 
   if (props.children) {
-    effect(() => {
-      el.textContent = props.children();
-    });
+    setChild(el, props.children);
   }
 
   return el;
@@ -49,6 +49,7 @@ const el = render(
   },
   {
     setAttr: (el, key, val) => effect(() => el.setAttribute(key, val())),
+    setChild: (el, val) => effect(() => (el.textContent = val())),
   }
 );
 
