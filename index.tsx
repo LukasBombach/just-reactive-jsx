@@ -8,7 +8,14 @@ enableJsDomGlobally();
 
 const p = (val: unknown) => pretty.format(val, { plugins: [pretty.plugins.DOMElement], highlight: true });
 
-function render({ type, props }: ReactElement) {
+function render(
+  { type, props }: ReactElement,
+  {
+    setAttr,
+  }: {
+    setAttr: (el: HTMLElement, key: string, val: any) => void;
+  }
+) {
   if (typeof type !== "string") throw new Error("not yet implemented");
 
   const el = document.createElement(type);
@@ -16,9 +23,7 @@ function render({ type, props }: ReactElement) {
   const { children, ...attrs } = props;
 
   for (const [key, val] of Object.entries(attrs)) {
-    effect(() => {
-      el.setAttribute(key, val());
-    });
+    setAttr(el, key, val);
   }
 
   if (props.children) {
@@ -33,14 +38,19 @@ function render({ type, props }: ReactElement) {
 const $id = signal("world");
 const $text = signal("hello world");
 
-const el = render({
-  type: "p",
-  key: null,
-  props: {
-    id: $id,
-    children: $text,
+const el = render(
+  {
+    type: "p",
+    key: null,
+    props: {
+      id: $id,
+      children: $text,
+    },
   },
-});
+  {
+    setAttr: (el, key, val) => effect(() => el.setAttribute(key, val())),
+  }
+);
 
 console.debug(p(el));
 
