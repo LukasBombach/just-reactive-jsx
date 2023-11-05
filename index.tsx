@@ -22,14 +22,13 @@ function render(
 
   const el = document.createElement(type);
 
-  const { children, ...attrs } = props;
-
-  for (const [key, val] of Object.entries(attrs)) {
-    setAttr(el, key, val);
-  }
-
-  if (props.children) {
-    setChild(el, props.children);
+  for (const [key, val] of Object.entries(props)) {
+    if (key === "children") {
+      const children = Array.isArray(val) ? val : [val];
+      children.forEach(child => setChild(el, child));
+    } else {
+      setAttr(el, key, val);
+    }
   }
 
   return el;
