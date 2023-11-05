@@ -18,15 +18,6 @@ function p(val: unknown) {
   return pretty.format(val, options);
 }
 
-const $text = signal("Hello World");
-
-const jsx: JsxElement = {
-  type: "p",
-  props: {
-    children: $text,
-  },
-};
-
 function render(element: JsxElement) {
   const { type, props } = element;
   const el = document.createElement(type);
@@ -37,6 +28,22 @@ function render(element: JsxElement) {
   }
   return el;
 }
+
+const $text = signal("Hello World");
+
+// <p>{$text}</p>
+// <p>{el => el.textContent = $text()}</p>
+// <p>{el => effect(() => { el.textContent = $text() })}</p>
+//
+// <p>{$text}</p>
+// <p>{update => update($text())}</p>
+// <p>{update => effect(() => { update($text()) }</p>
+const jsx: JsxElement = {
+  type: "p",
+  props: {
+    children: $text,
+  },
+};
 
 const el = render(jsx);
 
