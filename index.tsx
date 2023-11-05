@@ -1,4 +1,4 @@
-import { signal, effect } from "@maverick-js/signals";
+import { signal, effect, tick } from "@maverick-js/signals";
 import * as pretty from "pretty-format";
 import enableJsDomGlobally from "jsdom-global";
 
@@ -9,9 +9,13 @@ interface JsxElement {
   props: Record<string, any>;
 }
 
-function print(...val: unknown[]) {
+function print(...vals: unknown[]) {
+  console.debug(...vals);
+}
+
+function p(val: unknown) {
   const options = { plugins: [pretty.plugins.DOMElement], highlight: true };
-  console.debug(...val.map(v => pretty.format(v, options)));
+  return pretty.format(val, options);
 }
 
 const $text = signal("Hello World");
@@ -28,9 +32,7 @@ function render(element: JsxElement) {
   const el = document.createElement(type);
   if (props.children) {
     effect(() => {
-      let children = props.children();
-      console.debug("render", children);
-      el.textContent = children;
+      el.textContent = props.children();
     });
   }
   return el;
@@ -38,8 +40,9 @@ function render(element: JsxElement) {
 
 const el = render(jsx);
 
-print("before", el.textContent);
+print("before", "\n\n", p(el), "\n\n\n");
 
 $text.set("Brave new world");
+tick();
 
-print("after", el.textContent);
+Promise.resolve().then(() => print("after", "\n\n", p(el), "\n\n\n"));
