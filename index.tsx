@@ -38,6 +38,13 @@ const $text = signal("Hello World");
 // <p>{$text}</p>
 // <p>{update => update($text())}</p>
 // <p>{update => effect(() => { update($text()) }</p>
+
+// xrender(<p>{$text}</p>, {
+//   updateChildren: (el, children) => {
+//     el.textContent = children();
+//   }
+// });
+
 const jsx: JsxElement = {
   type: "p",
   props: {
@@ -47,9 +54,11 @@ const jsx: JsxElement = {
 
 const el = render(jsx);
 
-print("before", "\n\n", p(el), "\n\n\n");
+print(p(el));
+
+print("\n✨ update ✨\n");
 
 $text.set("Brave new world");
 tick();
 
-Promise.resolve().then(() => print("after", "\n\n", p(el), "\n\n\n"));
+print(p(el));
