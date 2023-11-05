@@ -13,6 +13,14 @@ function render({ type, props }: ReactElement) {
 
   const el = document.createElement(type);
 
+  const { children, ...attrs } = props;
+
+  for (const [key, val] of Object.entries(attrs)) {
+    effect(() => {
+      el.setAttribute(key, val());
+    });
+  }
+
   if (props.children) {
     effect(() => {
       el.textContent = props.children();
@@ -22,12 +30,14 @@ function render({ type, props }: ReactElement) {
   return el;
 }
 
-const $text = signal("Hello World");
+const $id = signal("world");
+const $text = signal("hello world");
 
 const el = render({
   type: "p",
   key: null,
   props: {
+    id: $id,
     children: $text,
   },
 });
@@ -35,6 +45,6 @@ const el = render({
 console.debug(p(el));
 
 console.debug("\n✨ update ✨\n");
-$text.set("Brave new world") && tick();
+$id.set("moon") && $text.set("hello moon") && tick();
 
 console.debug(p(el));
