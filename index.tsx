@@ -2,63 +2,39 @@ import { signal, effect, tick } from "@maverick-js/signals";
 import * as pretty from "pretty-format";
 import enableJsDomGlobally from "jsdom-global";
 
+import type { ReactElement } from "react";
+
 enableJsDomGlobally();
 
-interface JsxElement {
-  type: keyof JSX.IntrinsicElements;
-  props: Record<string, any>;
-}
+const p = (val: unknown) => pretty.format(val, { plugins: [pretty.plugins.DOMElement], highlight: true });
 
-function print(...vals: unknown[]) {
-  console.debug(...vals);
-}
+function render({ type, props }: ReactElement) {
+  if (typeof type !== "string") throw new Error("not yet implemented");
 
-function p(val: unknown) {
-  const options = { plugins: [pretty.plugins.DOMElement], highlight: true };
-  return pretty.format(val, options);
-}
-
-function render(element: JsxElement) {
-  const { type, props } = element;
   const el = document.createElement(type);
+
   if (props.children) {
     effect(() => {
       el.textContent = props.children();
     });
   }
+
   return el;
 }
 
 const $text = signal("Hello World");
 
-// <p>{$text}</p>
-// <p>{el => el.textContent = $text()}</p>
-// <p>{el => effect(() => { el.textContent = $text() })}</p>
-//
-// <p>{$text}</p>
-// <p>{update => update($text())}</p>
-// <p>{update => effect(() => { update($text()) }</p>
-
-// xrender(<p>{$text}</p>, {
-//   updateChildren: (el, children) => {
-//     el.textContent = children();
-//   }
-// });
-
-const jsx: JsxElement = {
+const el = render({
   type: "p",
+  key: null,
   props: {
     children: $text,
   },
-};
+});
 
-const el = render(jsx);
+console.debug(p(el));
 
-print(p(el));
+console.debug("\n✨ update ✨\n");
+$text.set("Brave new world") && tick();
 
-print("\n✨ update ✨\n");
-
-$text.set("Brave new world");
-tick();
-
-print(p(el));
+console.debug(p(el));
