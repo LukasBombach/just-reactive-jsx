@@ -6,9 +6,11 @@
     "@maverick-js/signals": "5.11.4",
     "@types/jsdom": "21.1.4",
     "@types/jsdom-global": "3.0.6",
+    "@types/react": "18.2.34",
     "bun-types": "latest",
     "jsdom": "22.1.0",
     "jsdom-global": "3.0.2",
+    "pretty-format": "29.7.0",
     "typescript": "5.2.2"
   }
 }
