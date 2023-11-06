@@ -11,6 +11,7 @@
     "jsdom": "22.1.0",
     "jsdom-global": "3.0.2",
     "pretty-format": "29.7.0",
+    "react": "18.2.0",
     "typescript": "5.2.2"
   }
 }
