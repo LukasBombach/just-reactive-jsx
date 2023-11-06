@@ -12,10 +12,10 @@ function render(
   { type, props }: ReactElement,
   {
     setAttr,
-    setChild,
+    insertChild,
   }: {
     setAttr: (el: HTMLElement, key: string, val: any) => void;
-    setChild: (el: HTMLElement, val: any) => void;
+    insertChild: (parent: HTMLElement, val: any) => void;
   }
 ) {
   if (typeof type !== "string") throw new Error("not yet implemented");
@@ -25,7 +25,7 @@ function render(
   for (const [key, val] of Object.entries(props)) {
     if (key === "children") {
       const children = Array.isArray(val) ? val : [val];
-      children.forEach(child => setChild(el, child));
+      children.forEach(child => insertChild(el, child));
     } else {
       setAttr(el, key, val);
     }
@@ -35,7 +35,7 @@ function render(
 }
 
 const $id = signal("world");
-const $text = signal("hello world");
+const $greeting = signal("hello");
 
 const el = render(
   {
@@ -43,18 +43,21 @@ const el = render(
     key: null,
     props: {
       id: $id,
-      children: $text,
+      children: [$greeting, $id],
     },
   },
   {
     setAttr: (el, key, val) => effect(() => el.setAttribute(key, val())),
-    setChild: (el, val) => effect(() => (el.textContent = val())),
+    insertChild: (parent, val) => {
+      const el = document.createTextNode("");
+      effect(() => (el.textContent = val()));
+      parent.appendChild(el);
+    },
   }
 );
 
 console.debug(p(el));
 
-console.debug("\n\n✨✨✨\n\n");
-$id.set("moon") && $text.set("hello moon") && tick();
+console.debug("\n\n✨✨✨\n\n"), $greeting.set("bye"), $id.set("moon"), tick();
 
 console.debug(p(el));
