@@ -9,25 +9,22 @@ enableJsDomGlobally();
 const p = (val: unknown) => pretty.format(val, { plugins: [pretty.plugins.DOMElement], highlight: true });
 
 function render(
-  { type, props }: ReactElement,
-  {
-    setAttr,
-    insertChild,
-  }: {
+  reactEl: ReactElement,
+  options: {
     setAttr: (el: HTMLElement, key: string, val: any) => void;
     insertChild: (parent: HTMLElement, val: any) => void;
   }
 ) {
-  if (typeof type !== "string") throw new Error("not yet implemented");
+  if (typeof reactEl.type !== "string") throw new Error("not yet implemented");
 
-  const el = document.createElement(type);
+  const el = document.createElement(reactEl.type);
 
-  for (const [key, val] of Object.entries(props)) {
+  for (const [key, val] of Object.entries(reactEl.props)) {
     if (key === "children") {
       const children = Array.isArray(val) ? val : [val];
-      children.forEach(child => insertChild(el, child));
+      children.forEach(child => options.insertChild(el, child));
     } else {
-      setAttr(el, key, val);
+      options.setAttr(el, key, val);
     }
   }
 
