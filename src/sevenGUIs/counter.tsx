@@ -90,3 +90,16 @@ tick();
 console.log("\n\n✨✨ click ✨✨\n\n");
 
 console.log(p(result));
+
+result
+  .querySelector("button")!
+  .dispatchEvent(new Event("click", { bubbles: false, cancelable: false, composed: false }));
+tick();
+result
+  .querySelector("button")!
+  .dispatchEvent(new Event("click", { bubbles: false, cancelable: false, composed: false }));
+tick();
+console.log("\n\n✨✨ click ✨✨");
+console.log("✨✨ click ✨✨\n\n");
+
+console.log(p(result));
