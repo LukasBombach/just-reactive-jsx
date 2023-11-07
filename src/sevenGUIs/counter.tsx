@@ -24,8 +24,16 @@ function isReactElement(val: any): val is ReactElement<Record<string, any>, stri
 
 const result = render(jsx, {
   setAttr(el, key, val) {
-    if (typeof val === "function") {
+    // Event handlers
+    if (key.startsWith("on") && typeof val === "function") {
+      const eventName = key.slice(2).toLowerCase();
+      el.addEventListener(eventName, val);
+
+      // wip: Reactive attributes
+    } else if (typeof val === "function") {
       effect(() => el.setAttribute(key, val()));
+
+      // static attributes
     } else {
       el.setAttribute(key, val);
     }
