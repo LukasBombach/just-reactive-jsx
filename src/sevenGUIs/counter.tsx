@@ -14,14 +14,7 @@ const count = signal(0);
 const jsx = (
   <form>
     <input type="number" value={count} />
-    <button
-      onClick={() => {
-        console.log("click event handler");
-        count.set(count() + 1);
-      }}
-    >
-      count
-    </button>
+    <button onClick={() => count.set(count() + 1)}>count</button>
   </form>
 );
 
@@ -69,22 +62,8 @@ const result = render(jsx, {
     }
 
     if (isReactElement(child)) {
-      const el = document.createElement(child.type);
-
-      for (const [key, val] of Object.entries(child.props)) {
-        if (key === "children") {
-          const children = Array.isArray(val) ? val : [val];
-          children.forEach(child => this.insertChild(el, child));
-        } else if (key.startsWith("on") && typeof val === "function") {
-          const eventName = key.slice(2).toLowerCase();
-          el.addEventListener(eventName, val);
-        } else {
-          this.setAttr(el, key, val);
-        }
-      }
-
+      const el = render(child, this);
       parent.appendChild(el);
-
       return;
     }
   },
