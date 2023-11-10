@@ -42,12 +42,13 @@ function isReactElement(val: any): val is ReactElement<Record<string, any>, stri
 
 const maverickRenderer: Options = {
   setAttr(el, key, val) {
-    // Event handlers
+    // Setting Event handlers
+    // todo Removing Event handlers
     if (key.startsWith("on") && typeof val === "function") {
       const eventName = key.slice(2).toLowerCase();
       el.addEventListener(eventName, val);
 
-      // wip: Reactive attributes
+      // Reactive attributes
     } else if (typeof val === "function") {
       effect(() => el.setAttribute(key, val()));
 
