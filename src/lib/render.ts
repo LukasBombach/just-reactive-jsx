@@ -51,6 +51,10 @@ const maverickRenderer: Options = {
     } else if (typeof val === "function") {
       effect(() => el.setAttribute(key, val()));
 
+      // falsy boolean attributes
+    } else if (val === undefined || val === null || val === false) {
+      el.removeAttribute(key);
+
       // static attributes
     } else {
       el.setAttribute(key, val);
