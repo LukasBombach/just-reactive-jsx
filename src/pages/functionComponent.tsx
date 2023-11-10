@@ -4,6 +4,18 @@ import { render } from "lib/render";
 
 import type { FC, ReactNode } from "react";
 
-const MyComponent: FC<{ children?: ReactNode }> = ({ children }) => <div>{children}</div>;
+const Container: FC<{ children?: ReactNode }> = ({ children }) => {
+  return <main>{children}</main>;
+};
 
-document.body.appendChild(render(<MyComponent>hello world</MyComponent>));
+const Input: FC<{ disabled?: boolean; value?: string }> = ({ disabled, value }) => {
+  return <input disabled={disabled} value={value} />;
+};
+
+document.body.appendChild(
+  render(
+    <Container>
+      This is an input: <Input value="test" />
+    </Container>
+  )
+);
