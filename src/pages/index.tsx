@@ -7,6 +7,9 @@ document.body.appendChild(
     <main>
       <ul>
         <li>
+          <a href="./functionComponent">Function Component</a>
+        </li>
+        <li>
           <a href="./counter">7 GUIs: Counter</a>
         </li>
       </ul>

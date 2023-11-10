@@ -7,27 +7,33 @@ interface Options {
   insertChild: (parent: HTMLElement, val: ReactNode) => void;
 }
 
-export function render(reactEl: ReactElement, options: Options = maverickRenderer) {
-  // wip - only supports html elements
-  if (typeof reactEl.type !== "string") {
-    throw new Error("not yet implemented");
-  }
+export function render(
+  reactEl: ReactElement<Record<string, unknown>, string | ((props: Record<string, unknown>) => ReactNode)>,
+  options: Options = maverickRenderer
+): HTMLElement {
+  if (typeof reactEl.type === "string") {
+    // create the element
+    const el = document.createElement(reactEl.type);
 
-  // create the element
-  const el = document.createElement(reactEl.type);
-
-  // set the props
-  for (const [key, val] of Object.entries(reactEl.props)) {
-    // special case for children
-    if (key === "children") {
-      const children = Array.isArray(val) ? val : [val];
-      children.forEach(child => options.insertChild(el, child));
-    } else {
-      options.setAttr(el, key, val);
+    // set the props
+    for (const [key, val] of Object.entries(reactEl.props)) {
+      // special case for children
+      if (key === "children") {
+        const children = Array.isArray(val) ? val : [val];
+        children.forEach(child => options.insertChild(el, child));
+      } else {
+        options.setAttr(el, key, val);
+      }
     }
+
+    return el;
   }
 
-  return el;
+  if (typeof reactEl.type == "function") {
+    return render(reactEl.type(reactEl.props));
+  }
+
+  throw new Error(`Cannot handle react element type ${typeof reactEl.type}`);
 }
 
 function isReactElement(val: any): val is ReactElement<Record<string, any>, string> {
