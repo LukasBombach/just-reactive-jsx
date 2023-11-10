@@ -3,9 +3,12 @@ Bun.serve({
   development: true,
   async fetch(req: Request) {
     const url = new URL(req.url);
+    const path = url.pathname === "/" ? "/index" : url.pathname;
+
+    console.log(JSON.stringify(url.pathname));
 
     const bundle = await Bun.build({
-      entrypoints: [`src/pages${url.pathname}.tsx`],
+      entrypoints: [`src/pages${path}.tsx`],
     });
 
     for (const message of bundle.logs) {
@@ -22,7 +25,7 @@ Bun.serve({
     <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>${url.pathname}</title>
+      <title>${path}</title>
     </head>
     <body>
       ${scripts}

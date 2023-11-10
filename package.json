@@ -3,7 +3,7 @@
   "module": "index.tsx",
   "type": "module",
   "scripts": {
-    "dev": "bun --watch src/server.tsx"
+    "dev": "bun --watch src/lib/server.tsx"
   },
   "devDependencies": {
     "@maverick-js/signals": "5.11.4",
@@ -11,6 +11,8 @@
     "@types/jsdom-global": "3.0.6",
     "@types/react": "18.2.34",
     "@types/react-dom": "18.2.15",
+    "@typescript/lib-dom": "npm:@types/web",
+    "add": "2.0.6",
     "bun-types": "1.0.10",
     "jsdom": "22.1.0",
     "jsdom-global": "3.0.2",

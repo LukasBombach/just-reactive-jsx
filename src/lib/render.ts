@@ -1,28 +1,40 @@
-import enableJsDomGlobally from "jsdom-global";
-import { signal, effect, tick } from "@maverick-js/signals";
-import * as pretty from "pretty-format";
-import { render } from "src/render";
+import { effect } from "@maverick-js/signals";
 
-import type { ReactElement } from "react";
+import type { ReactElement, ReactNode } from "react";
 
-enableJsDomGlobally();
+interface Options {
+  setAttr: (el: HTMLElement, key: string, val: any) => void;
+  insertChild: (parent: HTMLElement, val: ReactNode) => void;
+}
 
-const p = (val: unknown) => pretty.format(val, { plugins: [pretty.plugins.DOMElement], highlight: true });
+export function render(reactEl: ReactElement, options: Options = maverickRenderer) {
+  // wip - only supports html elements
+  if (typeof reactEl.type !== "string") {
+    throw new Error("not yet implemented");
+  }
 
-const count = signal(0);
+  // create the element
+  const el = document.createElement(reactEl.type);
 
-const jsx = (
-  <form>
-    <input type="number" value={count} />
-    <button onClick={() => count.set(count() + 1)}>count</button>
-  </form>
-);
+  // set the props
+  for (const [key, val] of Object.entries(reactEl.props)) {
+    // special case for children
+    if (key === "children") {
+      const children = Array.isArray(val) ? val : [val];
+      children.forEach(child => options.insertChild(el, child));
+    } else {
+      options.setAttr(el, key, val);
+    }
+  }
+
+  return el;
+}
 
 function isReactElement(val: any): val is ReactElement<Record<string, any>, string> {
   return typeof val === "object" && val !== null && "type" in val && "props" in val;
 }
 
-const result = render(jsx, {
+const maverickRenderer: Options = {
   setAttr(el, key, val) {
     // Event handlers
     if (key.startsWith("on") && typeof val === "function") {
@@ -75,31 +87,4 @@ const result = render(jsx, {
       return;
     }
   },
-});
-
-console.log(jsx);
-
-console.log("\n\n⬇  ⬇  ⬇\n\n");
-
-console.log(p(result));
-
-result
-  .querySelector("button")!
-  .dispatchEvent(new Event("click", { bubbles: false, cancelable: false, composed: false }));
-tick();
-console.log("\n\n✨✨ click ✨✨\n\n");
-
-console.log(p(result));
-
-result
-  .querySelector("button")!
-  .dispatchEvent(new Event("click", { bubbles: false, cancelable: false, composed: false }));
-tick();
-result
-  .querySelector("button")!
-  .dispatchEvent(new Event("click", { bubbles: false, cancelable: false, composed: false }));
-tick();
-console.log("\n\n✨✨ click ✨✨");
-console.log("✨✨ click ✨✨\n\n");
-
-console.log(p(result));
+};
