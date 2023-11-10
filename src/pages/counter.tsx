@@ -1,3 +1,5 @@
+/// <reference lib="dom" />
+
 import { signal } from "@maverick-js/signals";
 import { render } from "lib/render";
 

@@ -1,3 +1,5 @@
+/// <reference lib="dom" />
+
 import { render } from "lib/render";
 
 document.body.appendChild(
