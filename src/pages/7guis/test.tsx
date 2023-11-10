@@ -1,5 +1,4 @@
-import enableJsDomGlobally from "jsdom-global";
-import { signal, effect, tick } from "@maverick-js/signals";
+import { signal, effect } from "@maverick-js/signals";
 import { render } from "src/render";
 
 import type { ReactElement } from "react";
