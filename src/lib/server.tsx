@@ -5,7 +5,9 @@ Bun.serve({
     const url = new URL(req.url);
     const path = url.pathname === "/" ? "/index" : url.pathname;
 
-    console.log(JSON.stringify(url.pathname));
+    if (["/favicon.ico", "/serviceWoker.js"].includes(path)) {
+      return new Response(null, { status: 200 });
+    }
 
     const bundle = await Bun.build({
       entrypoints: [`src/pages${path}.tsx`],
@@ -21,16 +23,16 @@ Bun.serve({
 
     return new Response(
       `<!DOCTYPE html>
-    <html lang="en">
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>${path}</title>
-    </head>
-    <body>
-      ${scripts}
-    </body>
-    </html>`,
+        <html lang="en">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>${path}</title>
+        </head>
+        <body>
+          ${scripts}
+        </body>
+        </html>`,
       {
         headers: {
           "content-type": "text/html; charset=utf-8",
