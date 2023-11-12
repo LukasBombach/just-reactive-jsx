@@ -14,6 +14,20 @@ Bun.serve({
       define: {
         REQUESTED_PAGE_PATH: JSON.stringify(path),
       },
+      plugins: [
+        {
+          name: "reactive augmenter",
+          async setup(build) {
+            build.onLoad({ filter: /src\/pages\/.+\.tsx$/ }, async ({ path }) => {
+              const file = Bun.file(path);
+              const contents = await file.text();
+              console.log(`\n[reactive augmenter]\n\n${path}\n\n${contents}\n`);
+
+              return { contents };
+            });
+          },
+        },
+      ],
     });
 
     for (const message of bundle.logs) {
