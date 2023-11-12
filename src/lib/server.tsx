@@ -3,27 +3,17 @@ Bun.serve({
   development: true,
   async fetch(req: Request) {
     const url = new URL(req.url);
-    const path = url.pathname === "/" ? "/index" : url.pathname;
+    const path = url.pathname === "/" ? "../pages/index.tsx" : `../pages/${url.pathname}.tsx`;
 
-    if (["/favicon.ico", "/serviceWoker.js"].includes(path)) {
+    if (["/favicon.ico", "/serviceWoker.js"].includes(url.pathname)) {
       return new Response(null, { status: 200 });
     }
 
     const bundle = await Bun.build({
-      entrypoints: [`src/pages${path}.tsx`],
-      plugins: [
-        {
-          name: "dynamic-entry",
-          async setup(build) {
-            build.onLoad({ filter: /src\/pages/ }, async ({ path }) => {
-              const file = Bun.file(path);
-              const contents = await file.text();
-              console.log(`[dynamic-entry] ${path}`);
-              return { contents: `import M from ${JSON.stringify(path)}; console.log(M);` };
-            });
-          },
-        },
-      ],
+      entrypoints: ["src/lib/pageLoader.tsx"],
+      define: {
+        REQUESTED_PAGE_PATH: JSON.stringify(path),
+      },
     });
 
     for (const message of bundle.logs) {

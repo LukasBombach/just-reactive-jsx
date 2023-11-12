@@ -1,9 +1,5 @@
-/// <reference lib="dom" />
-
-import { render } from "lib/render";
-
-document.body.appendChild(
-  render(
+export default function Test() {
+  return (
     <main>
       <ul>
         <li>
@@ -17,5 +13,5 @@ document.body.appendChild(
         </li>
       </ul>
     </main>
-  )
-);
+  );
+}
