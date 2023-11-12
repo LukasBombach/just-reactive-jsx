@@ -19,7 +19,7 @@ Bun.serve({
               const file = Bun.file(path);
               const contents = await file.text();
               console.log(`[dynamic-entry] ${path}`);
-              return { contents };
+              return { contents: `import M from ${JSON.stringify(path)}; console.log(M);` };
             });
           },
         },
