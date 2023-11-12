@@ -11,6 +11,19 @@ Bun.serve({
 
     const bundle = await Bun.build({
       entrypoints: [`src/pages${path}.tsx`],
+      plugins: [
+        {
+          name: "dynamic-entry",
+          async setup(build) {
+            build.onLoad({ filter: /src\/pages/ }, async ({ path }) => {
+              const file = Bun.file(path);
+              const contents = await file.text();
+              console.log(`[dynamic-entry] ${path}`);
+              return { contents };
+            });
+          },
+        },
+      ],
     });
 
     for (const message of bundle.logs) {
