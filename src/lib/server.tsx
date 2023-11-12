@@ -1,3 +1,16 @@
+import { parse } from "@swc/core";
+import { Visitor } from "@swc/core/Visitor";
+
+import type { JSXAttrValue } from "@swc/types";
+
+class MyVisitor extends Visitor {
+  visitJSXAttributeValue(value: JSXAttrValue | undefined) {
+    console.log(JSON.stringify(value) + "\n");
+
+    return value;
+  }
+}
+
 Bun.serve({
   port: 3000,
   development: true,
@@ -21,7 +34,11 @@ Bun.serve({
             build.onLoad({ filter: /src\/pages\/.+\.tsx$/ }, async ({ path }) => {
               const file = Bun.file(path);
               const contents = await file.text();
-              console.log(`\n[reactive augmenter]\n\n${path}\n\n${contents}\n`);
+              console.log(`\n[reactive augmenter]\n\n${path}\n\n${contents}`);
+
+              const ast = await parse(contents, { syntax: "typescript", tsx: true });
+
+              new MyVisitor().visitProgram(ast);
 
               return { contents };
             });
