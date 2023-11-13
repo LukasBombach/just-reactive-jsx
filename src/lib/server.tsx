@@ -18,7 +18,7 @@ const dummySpan: Span = {
   ctxt: 0,
 };
 
-function findIdentifiersInJsxAttributes(ast: Module): Identifier[] {
+function transformJsxAttributes(ast: Module) {
   const identifiers: Identifier[] = [];
 
   class FindIdentifiers extends Visitor {
@@ -26,7 +26,6 @@ function findIdentifiersInJsxAttributes(ast: Module): Identifier[] {
       if (value?.type === "JSXExpressionContainer" && value.expression.type === "Identifier") {
         identifiers.push(value.expression);
       }
-
       return value;
     }
   }
@@ -35,40 +34,30 @@ function findIdentifiersInJsxAttributes(ast: Module): Identifier[] {
     visitVariableDeclaration(variableDeclaration: VariableDeclaration): VariableDeclaration {
       if (variableDeclaration.declarations.length === 1) {
         const declarator = variableDeclaration.declarations[0];
-        if (declarator.id.type === "Identifier" && declarator.id.value === "count") {
-          // Erstelle einen neuen VariableDeclarator für `const count = signal(0);`
-          const newDeclarator: VariableDeclarator = {
-            ...declarator,
-            id: declarator.id, // Behält den bestehenden Identifier bei
-            init: this.createSignalCallExpression(declarator.init), // Erstellt einen CallExpression für `signal(0)`
-          };
-
-          // Erstelle einen neuen VariableDeclaration-Knoten mit dem neuen Declarator
+        if (declarator.id.type === "Identifier" && identifiers.map(i => i.value).includes(declarator.id.value)) {
           return {
             ...variableDeclaration,
-            kind: "const", // Ändere 'let' zu 'const'
-            declarations: [newDeclarator],
+            kind: "const",
+            declarations: [
+              {
+                ...declarator,
+                init: {
+                  type: "CallExpression",
+                  span: dummySpan,
+                  callee: { type: "Identifier", span: dummySpan, value: "signal", optional: false },
+                  arguments: declarator.init ? [{ expression: { ...declarator.init } }] : [],
+                },
+              },
+            ],
           };
         }
       }
       return variableDeclaration;
     }
-
-    createSignalCallExpression(originalInit: Expression | undefined): CallExpression {
-      // Erstellt eine CallExpression für `signal(0)`
-      return {
-        type: "CallExpression",
-        span: dummySpan,
-        callee: { type: "Identifier", span: dummySpan, value: "signal", optional: false },
-        arguments: originalInit ? [{ expression: { ...originalInit } }] : [],
-      };
-    }
   }
 
   new FindIdentifiers().visitProgram(ast);
   new ModifyVariableVisitor().visitProgram(ast);
-
-  return identifiers;
 }
 
 Bun.serve({
@@ -98,7 +87,7 @@ Bun.serve({
 
               const ast = await parse(contents, { syntax: "typescript", tsx: true });
 
-              findIdentifiersInJsxAttributes(ast);
+              transformJsxAttributes(ast);
 
               const { code: transformedCode } = await print(ast);
 
