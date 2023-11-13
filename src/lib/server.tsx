@@ -12,7 +12,6 @@ import type {
   Identifier,
 } from "@swc/types";
 
-// Verwenden Sie einen Dummy-Span, wenn keine spezifische Positionierung erforderlich ist
 const dummySpan: Span = {
   start: 0,
   end: 0,
@@ -72,28 +71,6 @@ function findIdentifiersInJsxAttributes(ast: Module): Identifier[] {
   return identifiers;
 }
 
-/* function findVariableDeclaration(ast: Module, id: string): VariableDeclaration {
-  let declaration: VariableDeclaration | undefined;
-
-  class MyVisitor extends Visitor {
-    visitVariableDeclaration(d: VariableDeclaration) {
-      if (d.declarations[0].id.type === "Identifier" && d.declarations[0].id.value === id) {
-        declaration = d;
-      }
-
-      return d;
-    }
-  }
-
-  new MyVisitor().visitProgram(ast);
-
-  if (!declaration) {
-    throw new Error(`variable declaration for ${id} not found`);
-  }
-
-  return declaration;
-} */
-
 Bun.serve({
   port: 3000,
   development: true,
@@ -121,18 +98,11 @@ Bun.serve({
 
               const ast = await parse(contents, { syntax: "typescript", tsx: true });
 
-              const identifiers = findIdentifiersInJsxAttributes(ast);
+              findIdentifiersInJsxAttributes(ast);
 
               const { code: transformedCode } = await print(ast);
 
               console.log(`${transformedCode}`);
-
-              /* console.log(
-                identifiers
-                  .map(ident => findVariableDeclaration(ast, ident.value))
-                  .map(ident => JSON.stringify(ident, null, 2))
-                  .join("\n")
-              ); */
 
               return { contents };
             });
