@@ -11,6 +11,9 @@ export default function Test() {
         <li>
           <a href="./counter">7 GUIs: Counter</a>
         </li>
+        <li>
+          <a href="./augmented/counter">Counter (Augmented)</a>
+        </li>
       </ul>
     </main>
   );

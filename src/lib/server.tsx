@@ -1,16 +1,7 @@
 import { parse, print } from "@swc/core";
 import { Visitor } from "@swc/core/Visitor";
 
-import type {
-  Module,
-  Span,
-  JSXAttrValue,
-  VariableDeclaration,
-  VariableDeclarator,
-  Expression,
-  CallExpression,
-  Identifier,
-} from "@swc/types";
+import type { Module, Span, JSXAttrValue, VariableDeclaration, FunctionExpression, Identifier } from "@swc/types";
 
 const dummySpan: Span = {
   start: 0,
@@ -21,7 +12,7 @@ const dummySpan: Span = {
 function transformJsxAttributes(ast: Module) {
   const identifiers: Identifier[] = [];
 
-  class FindIdentifiers extends Visitor {
+  class ModifyAndStoreIdentifiers extends Visitor {
     visitJSXAttributeValue(value: JSXAttrValue | undefined) {
       if (value?.type === "JSXExpressionContainer" && value.expression.type === "Identifier") {
         identifiers.push(value.expression);
@@ -56,7 +47,7 @@ function transformJsxAttributes(ast: Module) {
     }
   }
 
-  new FindIdentifiers().visitProgram(ast);
+  new ModifyAndStoreIdentifiers().visitProgram(ast);
   new ModifyVariableVisitor().visitProgram(ast);
 }
 
@@ -84,15 +75,10 @@ Bun.serve({
               const file = Bun.file(path);
               const contents = await file.text();
               console.log(`\n[reactive augmenter]\n\n${path}\n\n${contents}`);
-
               const ast = await parse(contents, { syntax: "typescript", tsx: true });
-
               transformJsxAttributes(ast);
-
               const { code: transformedCode } = await print(ast);
-
               console.log(`${transformedCode}`);
-
               return { contents };
             });
           },
