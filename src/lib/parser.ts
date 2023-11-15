@@ -117,6 +117,23 @@ function findAllVariableDeclarations(ast: Program, identifiers: Identifier[]): V
   return Array.from(declarations);
 }
 
+function findAllUsagesOfDeclarations(ast: Program, declarations: VariableDeclaration[]): Identifier[] {
+  const usages = new Set<Identifier>();
+
+  class FindUsages extends Visitor {
+    visitIdentifier(value: Identifier) {
+      if (declarations.some(d => d.declarations.some(declarator => isSameIdentifier(declarator.id, value)))) {
+        usages.add(value);
+      }
+      return value;
+    }
+  }
+
+  new FindUsages().visitProgram(ast);
+
+  return Array.from(usages);
+}
+
 function isIdentifier(node: Node): node is Identifier {
   return node.type === "Identifier";
 }
