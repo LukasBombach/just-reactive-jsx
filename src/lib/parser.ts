@@ -1,14 +1,6 @@
 import { Visitor } from "@swc/core/Visitor";
 
-import type {
-  Program,
-  Node,
-  Span,
-  JSXAttrValue,
-  VariableDeclaration,
-  JSXExpressionContainer,
-  Identifier,
-} from "@swc/types";
+import type { Program, Node, Span, JSXAttrValue, VariableDeclaration, Identifier } from "@swc/types";
 
 const dummySpan: Span = {
   start: 0,
