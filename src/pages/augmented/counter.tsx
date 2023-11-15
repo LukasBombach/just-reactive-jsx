@@ -4,7 +4,7 @@ export default function Counter() {
   return (
     <div>
       <input value={count} />
-      <button onClick={() => count++}>count</button>
+      <button onClick={() => (count = count + 1)}>count</button>
     </div>
   );
 }

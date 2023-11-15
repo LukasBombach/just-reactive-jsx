@@ -25,13 +25,13 @@ Bun.serve({
               const file = Bun.file(path);
               const contents = await file.text();
 
-              console.log(`\n[reactive augmenter]\n\n${path}\n\n${contents}`);
+              // console.log(`\n[reactive augmenter]\n\n${path}\n\n${contents}`);
 
               const ast = await parse(contents, { syntax: "typescript", tsx: true });
               transformJsxAttributes(ast);
               const { code: transformedCode } = await print(ast);
 
-              console.log(`${transformedCode}`);
+              console.log(`\n${transformedCode}`);
 
               return { contents };
             });

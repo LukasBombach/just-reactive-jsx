@@ -3,7 +3,7 @@
   "module": "index.tsx",
   "type": "module",
   "scripts": {
-    "dev": "bun --hot src/lib/server.tsx"
+    "dev": "bun --watch src/lib/server.tsx"
   },
   "devDependencies": {
     "@maverick-js/signals": "5.11.4",
