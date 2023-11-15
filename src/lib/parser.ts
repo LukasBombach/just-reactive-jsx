@@ -1,6 +1,14 @@
 import { Visitor } from "@swc/core/Visitor";
 
-import type { Program, Node, Span, JSXAttrValue, VariableDeclaration, Identifier } from "@swc/types";
+import type {
+  AssignmentExpression,
+  Identifier,
+  JSXAttrValue,
+  Node,
+  Program,
+  Span,
+  VariableDeclaration,
+} from "@swc/types";
 
 const dummySpan: Span = {
   start: 0,
@@ -50,7 +58,7 @@ export function transformJsxAttributes(ast: Program) {
   new ModifyVariableVisitor().visitProgram(ast);
 }
 
-function makeJsxAttributesReactive(ast: Program): void {
+export function makeJsxAttributesReactive(ast: Program): void {
   const identifiers: Identifier[] = findAllIdentifiersWithinJsxAttributes(ast);
   const declarations: VariableDeclaration[] = findAllVariableDeclarations(ast, identifiers);
   const usages: Identifier[] = findAllUsagesOfDeclarations(ast, declarations);
@@ -60,7 +68,7 @@ function makeJsxAttributesReactive(ast: Program): void {
 
   transformToSignals(ast, declarations);
   transformToSetters(ast, assignments);
-  transformToGetters(ast, assignments);
+  transformToGetters(ast, accessors);
 }
 
 function findAllIdentifiersWithinJsxAttributes(ast: Program): Identifier[] {
@@ -124,6 +132,40 @@ function findAllUsagesOfDeclarations(ast: Program, declarations: VariableDeclara
   new FindUsages().visitProgram(ast);
 
   return Array.from(usages);
+}
+
+function takeAssignments(ast: Program, usages: Identifier[]): Identifier[] {
+  const assignments = new Set<Identifier>();
+
+  class FindAssignments extends Visitor {
+    visitAssignmentExpression(value: AssignmentExpression) {
+      if (value.type === "AssignmentExpression" && isIdentifier(value.left)) {
+        assignments.add(value.left);
+      }
+      return value;
+    }
+  }
+
+  new FindAssignments().visitProgram(ast);
+
+  return usages.filter(u => assignments.has(u));
+}
+
+function takeAccessors(ast: Program, usages: Identifier[]): Identifier[] {
+  const assignments = new Set<Identifier>();
+
+  class FindAssignments extends Visitor {
+    visitAssignmentExpression(value: AssignmentExpression) {
+      if (value.type === "AssignmentExpression" && isIdentifier(value.left)) {
+        assignments.add(value.left);
+      }
+      return value;
+    }
+  }
+
+  new FindAssignments().visitProgram(ast);
+
+  return usages.filter(u => !assignments.has(u));
 }
 
 function isIdentifier(node: Node): node is Identifier {
