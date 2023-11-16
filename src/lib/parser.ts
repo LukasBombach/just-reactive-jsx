@@ -2,15 +2,16 @@ import { Visitor } from "@swc/core/Visitor";
 
 import type {
   AssignmentExpression,
+  CallExpression,
+  Expression,
   Identifier,
   JSXAttrValue,
+  JSXExpressionContainer,
   Node,
   Program,
   Span,
   VariableDeclaration,
   VariableDeclarator,
-  Expression,
-  CallExpression,
 } from "@swc/types";
 
 const dummySpan: Span = {
@@ -184,10 +185,21 @@ function transformToSetters(ast: Program, assignments: Identifier[]): void {
 }
 
 function transformToGetters(ast: Program, accessors: Identifier[]): void {
+  const jsxExpressionContainers = new Set<JSXExpressionContainer>();
+
+  class SaveJSXExpressionContainers extends Visitor {
+    visitJSXAttributeValue(value: JSXAttrValue | undefined) {
+      if (value?.type === "JSXExpressionContainer") {
+        jsxExpressionContainers.add(value);
+      }
+      return value;
+    }
+  }
+
   class TransformToGetters extends Visitor {
     // @ts-expect-error we can return a CallExpression here, it works
     visitIdentifier(value: Identifier): CallExpression | Identifier {
-      if (accessors.includes(value)) {
+      if (accessors.includes(value) && !setSome(jsxExpressionContainers, c => c.expression === value)) {
         return {
           type: "CallExpression",
           span: dummySpan,
@@ -204,6 +216,7 @@ function transformToGetters(ast: Program, accessors: Identifier[]): void {
     }
   }
 
+  new SaveJSXExpressionContainers().visitProgram(ast);
   new TransformToGetters().visitProgram(ast);
 }
 
@@ -213,4 +226,13 @@ function isIdentifier(node: Node): node is Identifier {
 
 function isSameIdentifier(a: Node, b: Node): boolean {
   return isIdentifier(a) && isIdentifier(b) && a.value === b.value && a.span.ctxt === b.span.ctxt;
+}
+
+function setSome<T>(set: Set<T>, callback: (item: T) => boolean): boolean {
+  for (let item of set) {
+    if (callback(item)) {
+      return true;
+    }
+  }
+  return false;
 }
