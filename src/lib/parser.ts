@@ -10,6 +10,7 @@ import type {
   VariableDeclaration,
   VariableDeclarator,
   Expression,
+  CallExpression,
 } from "@swc/types";
 
 const dummySpan: Span = {
@@ -27,8 +28,8 @@ export function makeJsxAttributesReactive(ast: Program): void {
   const accessors = takeAccessors(ast, usages);
 
   transformToSignals(ast, declarators);
-  transformToSetters(ast, assignments); // todo
-  // transformToGetters(ast, accessors); // todo
+  transformToSetters(ast, assignments);
+  transformToGetters(ast, accessors);
 }
 
 function findAllIdentifiersWithinJsxAttributes(ast: Program): Identifier[] {
@@ -180,6 +181,30 @@ function transformToSetters(ast: Program, assignments: Identifier[]): void {
   }
 
   new TransformToSetters().visitProgram(ast);
+}
+
+function transformToGetters(ast: Program, accessors: Identifier[]): void {
+  class TransformToGetters extends Visitor {
+    // @ts-expect-error we can return a CallExpression here, it works
+    visitIdentifier(value: Identifier): CallExpression | Identifier {
+      if (accessors.includes(value)) {
+        return {
+          type: "CallExpression",
+          span: dummySpan,
+          callee: {
+            type: "Identifier",
+            span: dummySpan,
+            value: value.value,
+            optional: false,
+          },
+          arguments: [],
+        };
+      }
+      return value;
+    }
+  }
+
+  new TransformToGetters().visitProgram(ast);
 }
 
 function isIdentifier(node: Node): node is Identifier {
