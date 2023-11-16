@@ -8,6 +8,8 @@ import type {
   Program,
   Span,
   VariableDeclaration,
+  VariableDeclarator,
+  Expression,
 } from "@swc/types";
 
 const dummySpan: Span = {
@@ -16,59 +18,17 @@ const dummySpan: Span = {
   ctxt: 0,
 };
 
-export function transformJsxAttributes(ast: Program) {
-  const identifiers: Identifier[] = [];
-
-  class ModifyAndStoreIdentifiers extends Visitor {
-    visitJSXAttributeValue(value: JSXAttrValue | undefined) {
-      if (value?.type === "JSXExpressionContainer" && value.expression.type === "Identifier") {
-        identifiers.push(value.expression);
-      }
-      return value;
-    }
-  }
-
-  class ModifyVariableVisitor extends Visitor {
-    visitVariableDeclaration(variableDeclaration: VariableDeclaration): VariableDeclaration {
-      if (variableDeclaration.declarations.length === 1) {
-        const declarator = variableDeclaration.declarations[0];
-        if (declarator.id.type === "Identifier" && identifiers.map(i => i.value).includes(declarator.id.value)) {
-          return {
-            ...variableDeclaration,
-            kind: "const",
-            declarations: [
-              {
-                ...declarator,
-                init: {
-                  type: "CallExpression",
-                  span: dummySpan,
-                  callee: { type: "Identifier", span: dummySpan, value: "signal", optional: false },
-                  arguments: declarator.init ? [{ expression: { ...declarator.init } }] : [],
-                },
-              },
-            ],
-          };
-        }
-      }
-      return variableDeclaration;
-    }
-  }
-
-  new ModifyAndStoreIdentifiers().visitProgram(ast);
-  new ModifyVariableVisitor().visitProgram(ast);
-}
-
 export function makeJsxAttributesReactive(ast: Program): void {
   const identifiers: Identifier[] = findAllIdentifiersWithinJsxAttributes(ast);
-  const declarations: VariableDeclaration[] = findAllVariableDeclarations(ast, identifiers);
-  const usages: Identifier[] = findAllUsagesOfDeclarations(ast, declarations);
+  const declarators: VariableDeclarator[] = findAllVariableDeclarators(ast, identifiers);
+  const usages: Identifier[] = findAllUsagesOfDeclarations(ast, declarators);
 
   const assignments = takeAssignments(ast, usages);
   const accessors = takeAccessors(ast, usages);
 
-  transformToSignals(ast, declarations);
-  transformToSetters(ast, assignments);
-  transformToGetters(ast, accessors);
+  transformToSignals(ast, declarators);
+  transformToSetters(ast, assignments); // todo
+  // transformToGetters(ast, accessors); // todo
 }
 
 function findAllIdentifiersWithinJsxAttributes(ast: Program): Identifier[] {
@@ -95,8 +55,8 @@ function findAllIdentifiersWithinJsxAttributes(ast: Program): Identifier[] {
   return identifiers;
 }
 
-function findAllVariableDeclarations(ast: Program, identifiers: Identifier[]): VariableDeclaration[] {
-  const declarations = new Set<VariableDeclaration>();
+function findAllVariableDeclarators(ast: Program, identifiers: Identifier[]): VariableDeclarator[] {
+  const declarations = new Set<VariableDeclarator>();
 
   class FindVariableDeclarations extends Visitor {
     visitVariableDeclaration(value: VariableDeclaration) {
@@ -105,7 +65,7 @@ function findAllVariableDeclarations(ast: Program, identifiers: Identifier[]): V
       }
 
       value.declarations.forEach(declarator => {
-        if (identifiers.some(i => isSameIdentifier(declarator.id, i))) declarations.add(value);
+        if (identifiers.some(i => isSameIdentifier(declarator.id, i))) declarations.add(declarator);
       });
 
       return value;
@@ -117,12 +77,12 @@ function findAllVariableDeclarations(ast: Program, identifiers: Identifier[]): V
   return Array.from(declarations);
 }
 
-function findAllUsagesOfDeclarations(ast: Program, declarations: VariableDeclaration[]): Identifier[] {
+function findAllUsagesOfDeclarations(ast: Program, declarators: VariableDeclarator[]): Identifier[] {
   const usages = new Set<Identifier>();
 
   class FindUsages extends Visitor {
     visitIdentifier(value: Identifier) {
-      if (declarations.some(d => d.declarations.some(declarator => isSameIdentifier(declarator.id, value)))) {
+      if (declarators.some(d => isSameIdentifier(d.id, value))) {
         usages.add(value);
       }
       return value;
@@ -166,6 +126,60 @@ function takeAccessors(ast: Program, usages: Identifier[]): Identifier[] {
   new FindAssignments().visitProgram(ast);
 
   return usages.filter(u => !assignments.has(u));
+}
+
+function transformToSignals(ast: Program, declarators: VariableDeclarator[]): void {
+  class TransformToSignals extends Visitor {
+    visitVariableDeclarator(value: VariableDeclarator): VariableDeclarator {
+      if (declarators.includes(value)) {
+        return {
+          ...value,
+          init: {
+            type: "CallExpression",
+            span: dummySpan,
+            callee: { type: "Identifier", span: dummySpan, value: "signal", optional: false },
+            arguments: value.init ? [{ expression: value.init }] : [],
+          },
+        };
+      }
+      return value;
+    }
+  }
+
+  new TransformToSignals().visitProgram(ast);
+}
+
+function transformToSetters(ast: Program, assignments: Identifier[]): void {
+  class TransformToSetters extends Visitor {
+    visitAssignmentExpression(value: AssignmentExpression): Expression {
+      if (isIdentifier(value.left) && assignments.includes(value.left)) {
+        return {
+          type: "CallExpression",
+          span: dummySpan,
+          callee: {
+            type: "MemberExpression",
+            span: dummySpan,
+            object: {
+              type: "Identifier",
+              span: dummySpan,
+              value: value.left.value,
+              optional: false,
+            },
+            property: {
+              type: "Identifier",
+              span: dummySpan,
+              value: "set",
+              optional: false,
+            },
+          },
+          arguments: [{ expression: value.right }],
+        };
+      }
+      return value;
+    }
+  }
+
+  new TransformToSetters().visitProgram(ast);
 }
 
 function isIdentifier(node: Node): node is Identifier {

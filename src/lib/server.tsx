@@ -1,5 +1,5 @@
 import { parse, print } from "@swc/core";
-import { transformJsxAttributes } from "./parser";
+import { makeJsxAttributesReactive } from "./parser";
 
 Bun.serve({
   port: 3000,
@@ -28,7 +28,8 @@ Bun.serve({
               // console.log(`\n[reactive augmenter]\n\n${path}\n\n${contents}`);
 
               const ast = await parse(contents, { syntax: "typescript", tsx: true });
-              transformJsxAttributes(ast);
+
+              makeJsxAttributesReactive(ast);
               const { code: transformedCode } = await print(ast);
 
               console.log(`\n${transformedCode}`);
