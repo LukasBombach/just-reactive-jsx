@@ -34,7 +34,8 @@ Bun.serve({
 
               console.log(`\n${transformedCode}`);
 
-              return { contents };
+              // todo string concat is a quick hack to make it work
+              return { contents: 'import { signal } from "@maverick-js/signals";' + transformedCode };
             });
           },
         },

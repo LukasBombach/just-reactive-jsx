@@ -113,8 +113,41 @@ function takeAssignments(ast: Program, usages: Identifier[]): Identifier[] {
   return usages.filter(u => assignments.has(u));
 }
 
+/**
+ * todo reuse other methods to find
+ * assignments
+ * jsxExpressionContainers
+ * declarations
+ */
 function takeAccessors(ast: Program, usages: Identifier[]): Identifier[] {
   const assignments = new Set<Identifier>();
+  const jsxExpressionContainers = new Set<JSXExpressionContainer>();
+  const declarations = new Set<VariableDeclarator>();
+
+  class FindVariableDeclarations extends Visitor {
+    visitVariableDeclaration(value: VariableDeclaration) {
+      if (value.kind === "const") {
+        return value;
+      }
+
+      value.declarations.forEach(declarator => {
+        if (usages.some(i => isSameIdentifier(declarator.id, i))) declarations.add(declarator);
+      });
+
+      return value;
+    }
+  }
+
+  new FindVariableDeclarations().visitProgram(ast);
+
+  class FindJSXExpressionContainers extends Visitor {
+    visitJSXAttributeValue(value: JSXAttrValue | undefined) {
+      if (value?.type === "JSXExpressionContainer") {
+        jsxExpressionContainers.add(value);
+      }
+      return value;
+    }
+  }
 
   class FindAssignments extends Visitor {
     visitAssignmentExpression(value: AssignmentExpression) {
@@ -125,9 +158,16 @@ function takeAccessors(ast: Program, usages: Identifier[]): Identifier[] {
     }
   }
 
+  new FindJSXExpressionContainers().visitProgram(ast);
   new FindAssignments().visitProgram(ast);
 
-  return usages.filter(u => !assignments.has(u));
+  const jsxExpressionContainersArr = Array.from(jsxExpressionContainers).map(c => c.expression);
+  const declarationsArr = Array.from(declarations).map(d => d.id);
+
+  return usages
+    .filter(u => !assignments.has(u))
+    .filter(u => !jsxExpressionContainersArr.some(c => c === u))
+    .filter(u => !declarationsArr.some(d => d === u));
 }
 
 function transformToSignals(ast: Program, declarators: VariableDeclarator[]): void {
@@ -185,21 +225,10 @@ function transformToSetters(ast: Program, assignments: Identifier[]): void {
 }
 
 function transformToGetters(ast: Program, accessors: Identifier[]): void {
-  const jsxExpressionContainers = new Set<JSXExpressionContainer>();
-
-  class SaveJSXExpressionContainers extends Visitor {
-    visitJSXAttributeValue(value: JSXAttrValue | undefined) {
-      if (value?.type === "JSXExpressionContainer") {
-        jsxExpressionContainers.add(value);
-      }
-      return value;
-    }
-  }
-
   class TransformToGetters extends Visitor {
     // @ts-expect-error we can return a CallExpression here, it works
     visitIdentifier(value: Identifier): CallExpression | Identifier {
-      if (accessors.includes(value) && !setSome(jsxExpressionContainers, c => c.expression === value)) {
+      if (accessors.includes(value)) {
         return {
           type: "CallExpression",
           span: dummySpan,
@@ -216,7 +245,6 @@ function transformToGetters(ast: Program, accessors: Identifier[]): void {
     }
   }
 
-  new SaveJSXExpressionContainers().visitProgram(ast);
   new TransformToGetters().visitProgram(ast);
 }
 
