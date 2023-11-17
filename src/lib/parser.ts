@@ -141,10 +141,9 @@ function takeAccessors(ast: Program, usages: Identifier[]): Identifier[] {
   new FindVariableDeclarations().visitProgram(ast);
 
   class FindJSXExpressionContainers extends Visitor {
-    visitJSXAttributeValue(value: JSXAttrValue | undefined) {
-      if (value?.type === "JSXExpressionContainer") {
-        jsxExpressionContainers.add(value);
-      }
+    visitJSXExpressionContainer(value: JSXExpressionContainer) {
+      jsxExpressionContainers.add(value);
+
       return value;
     }
   }
