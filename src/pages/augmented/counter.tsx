@@ -9,7 +9,16 @@ export default function Counter() {
       <input value={count} />
       <button onClick={() => (count = count + 1)}>count</button>
       <br />
-      {count % 2 === 0 ? <A /> : <B />}
+      {count % 2 === 0 ? (
+        <A />
+      ) : (
+        <div>
+          <p>
+            <B />
+          </p>
+          <img src="https://www.t-online.de/s/paper/_next/static/media/t-online-desktop.0a5256e3.svg" />
+        </div>
+      )}
     </div>
   );
 }

@@ -28,6 +28,13 @@ export function makeJsxAttributesReactive(ast: Program): void {
   const assignments = takeAssignments(ast, usages);
   const accessors = takeAccessors(ast, usages);
 
+  /**
+   * TODO WRONG: instead of finding and transforming all jsxExpressionContainers in one go
+   * we should have one method with the rules of selecting containers and another method
+   * that transforms the containers
+   */
+  transformJsxExpressionContainers(ast, accessors);
+
   transformToSignals(ast, declarators);
   transformToSetters(ast, assignments);
   transformToGetters(ast, accessors);
@@ -246,19 +253,64 @@ function transformToGetters(ast: Program, accessors: Identifier[]): void {
   new TransformToGetters().visitProgram(ast);
 }
 
+/**
+ * TODO WRONG: instead of finding and transforming all jsxExpressionContainers in one go
+ * we should have one method with the rules of selecting containers and another method
+ * that transforms the containers
+ */
+function transformJsxExpressionContainers(ast: Program, accessors: Identifier[]): void {
+  class TransformJsxExpressionContainers extends Visitor {
+    visitJSXExpressionContainer(value: JSXExpressionContainer): JSXExpressionContainer {
+      // todo wip shortcut, actually no callable expression should be transformed
+      // including identiefiers that reference a function
+      if (value.expression.type === "ArrowFunctionExpression") {
+        return value;
+      }
+
+      if (jsxExpressionContainerIncludesIdentifier(value, accessors)) {
+        return {
+          ...value,
+          expression: {
+            type: "ArrowFunctionExpression",
+            span: dummySpan,
+            params: [],
+            body: value.expression,
+            async: false,
+            generator: false,
+          },
+        };
+      }
+      return value;
+    }
+  }
+
+  new TransformJsxExpressionContainers().visitProgram(ast);
+}
+
+function jsxExpressionContainerIncludesIdentifier(
+  container: JSXExpressionContainer,
+  identifiers: Identifier[]
+): boolean {
+  let found = false;
+
+  class FindIdentifiers extends Visitor {
+    visitIdentifier(value: Identifier) {
+      if (identifiers.includes(value)) {
+        found = true;
+      }
+      return value;
+    }
+  }
+
+  new FindIdentifiers().visitJSXExpressionContainer(container);
+
+  return found;
+}
+
 function isIdentifier(node: Node): node is Identifier {
   return node.type === "Identifier";
 }
 
 function isSameIdentifier(a: Node, b: Node): boolean {
   return isIdentifier(a) && isIdentifier(b) && a.value === b.value && a.span.ctxt === b.span.ctxt;
-}
-
-function setSome<T>(set: Set<T>, callback: (item: T) => boolean): boolean {
-  for (let item of set) {
-    if (callback(item)) {
-      return true;
-    }
-  }
-  return false;
 }
