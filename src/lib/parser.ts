@@ -143,7 +143,6 @@ function takeAccessors(ast: Program, usages: Identifier[]): Identifier[] {
   class FindJSXExpressionContainers extends Visitor {
     visitJSXExpressionContainer(value: JSXExpressionContainer) {
       jsxExpressionContainers.add(value);
-
       return value;
     }
   }

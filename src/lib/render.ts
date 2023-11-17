@@ -4,39 +4,73 @@ import type { ReactElement, ReactNode } from "react";
 
 interface Options {
   setAttr: (el: HTMLElement, key: string, val: any) => void;
-  insertChild: (parent: HTMLElement, val: ReactNode) => void;
+  insertChild: (parent: HTMLElement, val: ReactNode | (() => ReactNode)) => void;
 }
 
 export function render(
-  reactEl: ReactElement<Record<string, unknown>, string | ((props: Record<string, unknown>) => ReactNode)>,
+  //reactEl: ReactElement<Record<string, unknown>, string | ((props: Record<string, unknown>) => ReactNode)>,
+  node: ReactNode,
   options: Options = maverickRenderer
-): HTMLElement {
-  if (typeof reactEl.type === "string") {
-    // create the element
-    const el = document.createElement(reactEl.type);
+): HTMLElement | Text {
+  if (typeof node === "boolean") {
+    return document.createTextNode(""); // todo find a better idea to return a void element
+  }
 
-    // set the props
-    for (const [key, val] of Object.entries(reactEl.props)) {
-      // special case for children
-      if (key === "children") {
-        const children = Array.isArray(val) ? val : [val];
-        children.forEach(child => options.insertChild(el, child));
-      } else {
-        options.setAttr(el, key, val);
-      }
-    }
+  if (node === null) {
+    return document.createTextNode(""); // todo find a better idea to return a void element
+  }
 
+  if (typeof node === "undefined") {
+    return document.createTextNode(""); // todo find a better idea to return a void element
+  }
+
+  if (typeof node === "string") {
+    const el = document.createTextNode("");
+    effect(() => ((el.textContent = node), undefined));
     return el;
   }
 
-  if (typeof reactEl.type == "function") {
-    return render(reactEl.type(reactEl.props));
+  if (typeof node === "number") {
+    const el = document.createTextNode("");
+    effect(() => ((el.textContent = node.toString()), undefined));
+    return el;
   }
 
-  throw new Error(`Cannot handle react element type ${typeof reactEl.type}`);
+  if (Array.isArray(node)) {
+    throw new Error("not yet implemented");
+  }
+
+  if (isReactElement(node)) {
+    if (typeof node.type === "string") {
+      // create the element
+      const el = document.createElement(node.type);
+
+      // set the props
+      for (const [key, val] of Object.entries(node.props)) {
+        // special case for children
+        if (key === "children") {
+          const children = Array.isArray(val) ? val : [val];
+          children.forEach(child => options.insertChild(el, child));
+        } else {
+          options.setAttr(el, key, val);
+        }
+      }
+
+      return el;
+    }
+
+    if (typeof node.type == "function") {
+      return render(node.type(node.props));
+    }
+  }
+
+  console.warn(`Cannot handle react element type ${typeof node}`, node);
+  return document.createTextNode(""); // todo find a better idea to return a void element
 }
 
-function isReactElement(val: any): val is ReactElement<Record<string, any>, string> {
+function isReactElement(
+  val: any
+): val is ReactElement<Record<string, unknown>, string | ((props: Record<string, unknown>) => ReactNode)> {
   return typeof val === "object" && val !== null && "type" in val && "props" in val;
 }
 
@@ -97,5 +131,21 @@ const maverickRenderer: Options = {
       parent.appendChild(el);
       return;
     }
+
+    if (typeof child === "function") {
+      let currentElement: HTMLElement | Text | undefined;
+      effect(() => {
+        if (!currentElement) {
+          currentElement = parent.appendChild(render(child(), this));
+        } else {
+          const newElement = render(child(), this);
+          parent.replaceChild(newElement, currentElement);
+          currentElement = newElement;
+        }
+      });
+      return;
+    }
+
+    console.warn("Unknown child type", typeof child, child);
   },
 };
