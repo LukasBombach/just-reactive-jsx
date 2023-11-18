@@ -1,6 +1,11 @@
 # just-reactive-jsx
 
-Plan:
+evaluate
+
+- [ ] EVALUATE: Compiler Augmented Reactivity (Signals)
+- [ ] EVALUATE: Automatic Reactive Declarations & Reactive Statements
+
+prove
 
 - [ ] PROVE: Business Logic Outside of Components (& other state managers)
 - [ ] PROVE: Just enough JavaScript (Hydration)
@@ -8,7 +13,7 @@ Plan:
 - [ ] PROVE: Fine-Grained Page Loading Strategy (& Hydration Strategy)
 - [ ] PROVE: Performance (Drag & Drop Performance Demo)
 
-- [ ] EVALUATE: Automatic Reactive Declarations & Reactive Statements
+
 
 Notes:
 
