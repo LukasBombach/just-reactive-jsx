@@ -90,6 +90,24 @@ const maverickRenderer: Options = {
     } else if (val === undefined || val === null || val === false) {
       el.removeAttribute(key);
 
+      // the className attribute needs special handling
+    } else if (key === "className") {
+      el.setAttribute("class", val);
+
+      // style attribute
+    } else if (key === "style") {
+      if (typeof val === "string") {
+        el.setAttribute("style", val);
+      } else {
+        for (const [styleKey, styleVal] of Object.entries(val)) {
+          if (typeof styleVal === "function") {
+            effect(() => el.style.setProperty(styleKey, styleVal()));
+          } else {
+            el.style.setProperty(styleKey, styleVal);
+          }
+        }
+      }
+
       // static attributes
     } else {
       el.setAttribute(key, val);

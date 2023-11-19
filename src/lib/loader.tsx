@@ -1,6 +1,6 @@
 /// <reference lib="dom" />
 
-import { render } from "lib/render";
+import { render } from "runtime/render";
 
 declare const REQUESTED_PAGE_PATH: string;
 
