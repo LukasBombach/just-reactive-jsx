@@ -15,7 +15,7 @@ const plugin: BunPlugin = {
       makeJsxAttributesReactive(ast);
       const { code: transformedCode } = await print(ast);
 
-      console.debug(transformedCode);
+      // console.debug(transformedCode);
 
       // todo string concat is a quick hack to make it work
       return { contents: 'import "lib/tailwind.css";import { signal } from "@maverick-js/signals";' + transformedCode };
