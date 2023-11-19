@@ -18,7 +18,7 @@ const plugin: BunPlugin = {
       console.debug(transformedCode);
 
       // todo string concat is a quick hack to make it work
-      return { contents: 'import { signal } from "@maverick-js/signals";' + transformedCode };
+      return { contents: 'import "lib/tailwind.css";import { signal } from "@maverick-js/signals";' + transformedCode };
     });
   },
 };
