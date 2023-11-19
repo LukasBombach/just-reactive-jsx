@@ -22,7 +22,7 @@ prove
 Notes:
 
 - [x] Basic reactivity
-- [ ] Get rid of unneded impports (React)
+- [ ] Get rid of unneded imports (React)
 - [ ] Reactive Declarations
 - [ ] Reactive Statements
 - [ ] CSS (Tailwind)

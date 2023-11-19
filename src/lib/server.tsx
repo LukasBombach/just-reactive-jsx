@@ -1,5 +1,4 @@
-import { parse, print } from "@swc/core";
-import { makeJsxAttributesReactive } from "./parser";
+import augmentReactivity from "../parser/plugin";
 import tailwindcssPlugin from "bun-plugin-tailwindcss";
 
 Bun.serve({
@@ -18,30 +17,7 @@ Bun.serve({
       define: {
         REQUESTED_PAGE_PATH: JSON.stringify(path),
       },
-      plugins: [
-        tailwindcssPlugin(),
-        {
-          name: "reactive augmenter",
-          async setup(build) {
-            build.onLoad({ filter: /src\/pages\/.+\.tsx$/ }, async ({ path }) => {
-              const file = Bun.file(path);
-              const contents = await file.text();
-
-              // console.log(`\n[reactive augmenter]\n\n${path}\n\n${contents}`);
-
-              const ast = await parse(contents, { syntax: "typescript", tsx: true });
-
-              makeJsxAttributesReactive(ast);
-              const { code: transformedCode } = await print(ast);
-
-              // console.log(`\n${transformedCode}`);
-
-              // todo string concat is a quick hack to make it work
-              return { contents: 'import { signal } from "@maverick-js/signals";' + transformedCode };
-            });
-          },
-        },
-      ],
+      plugins: [tailwindcssPlugin(), augmentReactivity()],
     });
 
     for (const message of bundle.logs) {
