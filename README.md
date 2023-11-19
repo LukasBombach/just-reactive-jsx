@@ -1,5 +1,11 @@
 # just-reactive-jsx
 
+Next steps
+
+- [ ] Clean up
+- [ ] Rm React
+- [ ] Hot Reload
+
 evaluate
 
 - [ ] EVALUATE: Compiler Augmented Reactivity (Signals)
@@ -12,8 +18,6 @@ prove
 - [ ] PROVE: Non-Ownership of the DOM
 - [ ] PROVE: Fine-Grained Page Loading Strategy (& Hydration Strategy)
 - [ ] PROVE: Performance (Drag & Drop Performance Demo)
-
-
 
 Notes:
 
