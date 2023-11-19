@@ -267,6 +267,11 @@ function transformJsxExpressionContainers(ast: Program, accessors: Identifier[])
         return value;
       }
 
+      /*
+       * todo use case: style={{ color: signal(color) }} should not make the entire style reactive
+       * but only the color property
+       */
+
       if (jsxExpressionContainerIncludesIdentifier(value, accessors)) {
         return {
           ...value,
@@ -274,7 +279,17 @@ function transformJsxExpressionContainers(ast: Program, accessors: Identifier[])
             type: "ArrowFunctionExpression",
             span: dummySpan,
             params: [],
-            body: value.expression,
+            body: {
+              type: "BlockStatement",
+              span: dummySpan,
+              stmts: [
+                {
+                  type: "ReturnStatement",
+                  span: dummySpan,
+                  argument: value.expression,
+                },
+              ],
+            },
             async: false,
             generator: false,
           },

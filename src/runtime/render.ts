@@ -84,7 +84,7 @@ const maverickRenderer: Options = {
 
       // Reactive attributes
     } else if (typeof val === "function") {
-      effect(() => el.setAttribute(key, val()));
+      effect(() => this.setAttr(el, key, val()));
 
       // falsy boolean attributes
     } else if (val === undefined || val === null || val === false) {

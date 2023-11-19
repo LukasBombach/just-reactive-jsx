@@ -15,6 +15,8 @@ const plugin: BunPlugin = {
       makeJsxAttributesReactive(ast);
       const { code: transformedCode } = await print(ast);
 
+      console.debug(transformedCode);
+
       // todo string concat is a quick hack to make it work
       return { contents: 'import { signal } from "@maverick-js/signals";' + transformedCode };
     });
