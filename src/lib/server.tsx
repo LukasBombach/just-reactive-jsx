@@ -1,5 +1,6 @@
 import { parse, print } from "@swc/core";
 import { makeJsxAttributesReactive } from "./parser";
+import tailwindcssPlugin from "bun-plugin-tailwindcss";
 
 Bun.serve({
   port: 3000,
@@ -18,6 +19,7 @@ Bun.serve({
         REQUESTED_PAGE_PATH: JSON.stringify(path),
       },
       plugins: [
+        tailwindcssPlugin(),
         {
           name: "reactive augmenter",
           async setup(build) {
@@ -32,7 +34,7 @@ Bun.serve({
               makeJsxAttributesReactive(ast);
               const { code: transformedCode } = await print(ast);
 
-              console.log(`\n${transformedCode}`);
+              // console.log(`\n${transformedCode}`);
 
               // todo string concat is a quick hack to make it work
               return { contents: 'import { signal } from "@maverick-js/signals";' + transformedCode };

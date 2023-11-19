@@ -14,6 +14,9 @@ export default function Test() {
         <li>
           <a href="./augmented/counter">Counter (Augmented)</a>
         </li>
+        <li>
+          <a href="./tailwind">Tailwind</a>
+        </li>
       </ul>
     </main>
   );
