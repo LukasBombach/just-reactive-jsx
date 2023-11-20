@@ -11,6 +11,11 @@ export default {
       midnight: "#282C34",
       moon: "#DCDCDC",
     },
+    extend: {
+      fontFamily: {
+        serif: ["DM Serif Display", "serif"],
+      },
+    },
   },
   plugins: [],
 };
