@@ -1,3 +1,4 @@
+import { Statement } from "@swc/core";
 import { Visitor } from "@swc/core/Visitor";
 
 import type {
@@ -29,15 +30,40 @@ export function makeJsxAttributesReactive(ast: Program): void {
   const accessors = takeAccessors(ast, usages);
 
   /**
+   * hacky quick way to make things work
+   */
+  const derivedDeclarators = declarators.filter(d => d.init && includesIdentifier(d.init, accessors));
+  const originalDeclarators = declarators.filter(d => !derivedDeclarators.includes(d));
+
+  /**
    * TODO WRONG: instead of finding and transforming all jsxExpressionContainers in one go
    * we should have one method with the rules of selecting containers and another method
    * that transforms the containers
    */
   transformJsxExpressionContainers(ast, accessors);
 
-  transformToSignals(ast, declarators);
+  // transformToSignals(ast, declarators);
+  transformToSignals(ast, originalDeclarators);
+  transformToComputed(ast, derivedDeclarators);
   transformToSetters(ast, assignments);
   transformToGetters(ast, accessors);
+}
+
+function includesIdentifier(expression: Expression, identifiers: Identifier[]): boolean {
+  let found = false;
+
+  class FindIdentifiers extends Visitor {
+    visitIdentifier(value: Identifier) {
+      if (identifiers.includes(value)) {
+        found = true;
+      }
+      return value;
+    }
+  }
+
+  new FindIdentifiers().visitExpression(expression);
+
+  return found;
 }
 
 function findAllIdentifiersWithinJsxAttributes(ast: Program): Identifier[] {
@@ -194,6 +220,50 @@ function transformToSignals(ast: Program, declarators: VariableDeclarator[]): vo
   }
 
   new TransformToSignals().visitProgram(ast);
+}
+
+function transformToComputed(ast: Program, declarators: VariableDeclarator[]): void {
+  class TransformToComputed extends Visitor {
+    visitVariableDeclarator(value: VariableDeclarator): VariableDeclarator {
+      if (declarators.includes(value)) {
+        return {
+          ...value,
+          init: {
+            type: "CallExpression",
+            span: dummySpan,
+            callee: { type: "Identifier", span: dummySpan, value: "computed", optional: false },
+            arguments: value.init
+              ? [
+                  {
+                    expression: {
+                      type: "ArrowFunctionExpression",
+                      span: dummySpan,
+                      params: [],
+                      body: {
+                        type: "BlockStatement",
+                        span: dummySpan,
+                        stmts: [
+                          {
+                            type: "ReturnStatement",
+                            span: dummySpan,
+                            argument: value.init,
+                          },
+                        ],
+                      },
+                      async: false,
+                      generator: false,
+                    },
+                  },
+                ]
+              : [],
+          },
+        };
+      }
+      return value;
+    }
+  }
+
+  new TransformToComputed().visitProgram(ast);
 }
 
 function transformToSetters(ast: Program, assignments: Identifier[]): void {
