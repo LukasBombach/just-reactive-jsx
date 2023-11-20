@@ -3,6 +3,7 @@
 Next steps
 
 - [ ] Clean up
+- [ ] Reactive Declarations
 - [ ] Rm React
 - [ ] Hot Reload
 
