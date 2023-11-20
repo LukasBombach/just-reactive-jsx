@@ -3,8 +3,12 @@
 Next steps
 
 - [ ] Clean up
-- [ ] Reactive Declarations
-- [ ] Rm React
+  - [ ] Reactive declarations quick implementation hack
+  - [ ] Reactive declarations selecting, possible edge-cases
+  - [ ] transformJsxExpressionContainers finds and transforms in one
+  - [ ] Really Remove React cleanly, even the package
+- [x] Reactive Declarations
+- [x] Rm React
 - [ ] Hot Reload
 
 evaluate
