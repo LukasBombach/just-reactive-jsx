@@ -36,7 +36,7 @@ Bun.serve({
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
           <title>HERE ${path}</title>
         </head>
-        <body>
+        <body class="bg-midnight text-moon">
           ${scripts}
         </body>
         </html>`,
