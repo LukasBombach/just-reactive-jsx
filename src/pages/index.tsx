@@ -3,7 +3,7 @@ export default function Home() {
     <main className="max-w-prose ml-24 mt-16 p-4">
       <header>
         <h1 className="">
-          <span className="block font-serif leading-[0.8em] [text-shadow:_1px_1px_2px_rgba(10,11,13,.8)] text-6xl">
+          <span className="block font-serif leading-[0.8em] [text-shadow:_1px_1px_2px_rgba(10,11,13,.8)] text-6xl pl-2">
             Unfinished
           </span>
           <span className="block font-serif leading-[0.8em] [text-shadow:_1px_1px_2px_rgba(10,11,13,.8)] text-8xl">
