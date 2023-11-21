@@ -15,7 +15,7 @@ export default function Home() {
       <section className="mt-24">
         <header className="uppercase text-sm text-[#13CE66]">Articles</header>
         <a className="block mt-4" href="/syntax-highlighting-with-css-and-a-background-image">
-          <h2 className="text-2xl font-bold">Syntax highlighting with CSS and a background image</h2>
+          <h2 className="text-2xl font-bold transition-all">Syntax highlighting with CSS and a background image</h2>
           <p className="font-light mt-2">
             Syntax highlighters generate a ton of markup. This is a proof of concept for using a background image to
             highlight code instead.
