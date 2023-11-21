@@ -1,4 +1,14 @@
+import fs from "fs/promises";
+import path from "path";
+
+import autoprefixer from "autoprefixer";
+import { type BunPlugin } from "bun";
+import cssnano from "cssnano";
+import postcss from "postcss";
+import tailwindcss from "tailwindcss";
+
 import augmentReactivity from "../parser/plugin";
+import { renderToString } from "./renderToString";
 import tailwindcssPlugin from "bun-plugin-tailwindcss";
 
 Bun.serve({
@@ -6,18 +16,39 @@ Bun.serve({
   development: true,
   async fetch(req: Request) {
     const url = new URL(req.url);
-    const path = url.pathname === "/" ? "../pages/index.tsx" : `../pages/${url.pathname}.tsx`;
+    const path = url.pathname === "/" ? "../pages/index.tsx" : `../pages${url.pathname}.tsx`;
 
     if (["/favicon.ico", "/serviceWoker.js"].includes(url.pathname)) {
       return new Response(null, { status: 200 });
     }
+
+    const { default: Page } = await import(path);
+
+    const collectedCss: string[] = [];
 
     const bundle = await Bun.build({
       entrypoints: ["src/lib/loader.tsx"],
       define: {
         REQUESTED_PAGE_PATH: JSON.stringify(path),
       },
-      plugins: [tailwindcssPlugin(), augmentReactivity()],
+      plugins: [
+        {
+          name: "tailwindcss",
+          setup: build => {
+            build.onLoad({ filter: /\.css$/ }, async args => {
+              const css = await fs.readFile(args.path, "utf-8");
+              const processor = postcss([autoprefixer(), tailwindcss(), cssnano()]);
+              const result = await processor.process(css, { from: args.path });
+              collectedCss.push(result.css);
+              return {
+                contents: "",
+                loader: "ts",
+              };
+            });
+          },
+        },
+        /* tailwindcssPlugin(), */ augmentReactivity(),
+      ],
     });
 
     for (const message of bundle.logs) {
@@ -34,10 +65,11 @@ Bun.serve({
         <head>
           <meta charset="UTF-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>HERE ${path}</title>
+          <title>HERE ${url.pathname}</title>
+          <style>${collectedCss.join("")}</style>
         </head>
         <body class="bg-midnight text-moon">
-          ${scripts}
+          ${renderToString(<Page />)}
         </body>
         </html>`,
       {
