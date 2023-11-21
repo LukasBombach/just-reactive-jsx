@@ -14,11 +14,20 @@ export default function Home() {
 
       <section className="mt-24">
         <header className="uppercase text-sm text-[#13CE66]">Articles</header>
+
         <a className="block mt-4" href="/syntax-highlighting-with-css-and-a-background-image">
           <h2 className="text-xl font-medium">Syntax highlighting with CSS and a background image</h2>
           <p className="font-thin mt-2 tracking-tight">
             Syntax highlighters generate a ton of markup. This is a proof of concept for using a background image to
             highlight code instead.
+          </p>
+          <p className="font-medium mt-2">Read more</p>
+        </a>
+
+        <a className="block mt-4" href="/counter">
+          <h2 className="text-xl font-medium">Counter</h2>
+          <p className="font-thin mt-2 tracking-tight">
+            This will be the first demo of just-enough-javascript extracted js
           </p>
           <p className="font-medium mt-2">Read more</p>
         </a>

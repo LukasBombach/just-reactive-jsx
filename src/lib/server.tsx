@@ -1,15 +1,9 @@
-import fs from "fs/promises";
-import path from "path";
-
 import autoprefixer from "autoprefixer";
-import { type BunPlugin } from "bun";
 import cssnano from "cssnano";
 import postcss from "postcss";
 import tailwindcss from "tailwindcss";
-
 import augmentReactivity from "../parser/plugin";
 import { renderToString } from "./renderToString";
-import tailwindcssPlugin from "bun-plugin-tailwindcss";
 
 Bun.serve({
   port: 3000,
@@ -36,7 +30,7 @@ Bun.serve({
           name: "tailwindcss",
           setup: build => {
             build.onLoad({ filter: /\.css$/ }, async args => {
-              const css = await fs.readFile(args.path, "utf-8");
+              const css = await Bun.file(args.path).text();
               const processor = postcss([autoprefixer(), tailwindcss(), cssnano()]);
               const result = await processor.process(css, { from: args.path });
               collectedCss.push(result.css);
@@ -47,7 +41,7 @@ Bun.serve({
             });
           },
         },
-        /* tailwindcssPlugin(), */ augmentReactivity(),
+        augmentReactivity(),
       ],
     });
 
