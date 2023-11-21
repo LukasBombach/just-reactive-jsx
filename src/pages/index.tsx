@@ -13,17 +13,14 @@ export default function Home() {
       </header>
 
       <section className="mt-24">
-        <header className="uppercase text-sm text-[#13CE66] [text-shadow:_1px_1px_2px_rgba(10,11,13,.1)]">
-          Articles
-        </header>
+        <header className="uppercase text-sm text-[#13CE66]">Articles</header>
         <a className="block mt-4" href="/syntax-highlighting-with-css-and-a-background-image">
-          <h2 className="text-2xl font-bold [text-shadow:_1px_1px_2px_rgba(10,11,13,.4)]">
-            Syntax highlighting with CSS and a background image
-          </h2>
-          <p className="font-light mt-2 [text-shadow:_1px_1px_2px_rgba(10,11,13,.2)]">
+          <h2 className="text-2xl font-bold">Syntax highlighting with CSS and a background image</h2>
+          <p className="font-light mt-2">
             Syntax highlighters generate a ton of markup. This is a proof of concept for using a background image to
             highlight code instead.
           </p>
+          <p className="font-bold mt-2">Read more</p>
         </a>
       </section>
     </main>
