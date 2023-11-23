@@ -2,7 +2,8 @@ import autoprefixer from "autoprefixer";
 import cssnano from "cssnano";
 import postcss from "postcss";
 import tailwindcss from "tailwindcss";
-import { renderToString } from "./renderToString";
+import { Document } from "pages/_document";
+import { renderToString } from "server/renderToString";
 
 async function getTailwindCss() {
   const tailwind = "@tailwind base;@tailwind components;@tailwind utilities;";
@@ -25,9 +26,16 @@ Bun.serve({
     const { default: Page } = await import(path);
     const tailwindCss = await getTailwindCss();
 
-    return new Response(renderToString(<Page criticalCss={tailwindCss} />), {
-      headers: { "content-type": "text/html; charset=utf-8" },
-    });
+    return new Response(
+      renderToString(
+        <Document criticalCss={tailwindCss}>
+          <Page />
+        </Document>
+      ),
+      {
+        headers: { "content-type": "text/html; charset=utf-8" },
+      }
+    );
   },
 });
 
