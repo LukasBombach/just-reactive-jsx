@@ -4,7 +4,7 @@ export default function Home() {
       <header>
         <h1 className="">
           <span className="block font-serif text-6xl leading-[0.8em] [text-shadow:_1px_1px_2px_rgba(10,11,13,.8)] pl-2">
-            Unfinished
+            Unfinished{" "}
           </span>
           <span className="block font-serif text-8xl leading-[0.8em] [text-shadow:_1px_1px_2px_rgba(10,11,13,.8)]">
             Thought
@@ -24,7 +24,7 @@ export default function Home() {
           <p className="font-medium mt-2">Read more</p>
         </a>
 
-        <a className="block mt-4" href="/counter">
+        <a className="block mt-6" href="/counter">
           <h2 className="text-xl font-medium">Counter</h2>
           <p className="font-thin mt-2 tracking-tight">
             This will be the first demo of just-enough-javascript extracted js

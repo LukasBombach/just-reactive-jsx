@@ -1,3 +1,13 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  body {
+    cursor: default;
+  }
+
+  a {
+    cursor: pointer;
+  }
+}
