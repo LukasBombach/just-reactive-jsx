@@ -1,4 +1,4 @@
-export default function Counter() {
+export function Counter() {
   let count = 0;
   let double = count * 2;
 

@@ -14,7 +14,9 @@ export function Document({ criticalCss, children }: Props) {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         {criticalCss && <style>{criticalCss}</style>}
       </head>
-      <body className="bg-midnight text-moon">{children}</body>
+      <body className="bg-midnight text-moon grid grid-cols-[6rem_fit-content(65ch)_1fr] grid-rows-[4rem_1fr]">
+        {children}
+      </body>
     </html>
   );
 }

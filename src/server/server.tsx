@@ -20,7 +20,7 @@ Bun.serve({
     const path = url.pathname === "/" ? "../pages/index.tsx" : `../pages${url.pathname}.tsx`;
 
     if (["/favicon.ico", "/serviceWoker.js"].includes(url.pathname)) {
-      return new Response(null, { status: 200 });
+      return new Response();
     }
 
     const { default: Page } = await import(path);
