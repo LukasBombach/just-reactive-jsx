@@ -1,3 +1,42 @@
+/**
+ * <input data-value="count" />
+ * <button data-onclick="eventhandler_1">count</button>
+ *
+ *
+ * const count = signal(0)
+ *
+ * function eventhandler_1() {
+ *  count.set(count.get() + 1)
+ * }
+ *
+ * effect(() => {
+ *  document.querySelector('[data-value="count"]').value = count()
+ * })
+ * 
+ * document.querySelector('[data-onclick]').forEach((el) => {
+ *
+ * })
+
+ */
+/**
+ * <input data-ref="1" value="0" />
+ * <button data-ref="2">count</button>
+ *
+ * const vals = {
+ *  1: signal(0),
+ * ]
+ *
+ * const refs = {
+ *   1: el => effect(() => el.value = vals[1].get())),
+ *   2: el => el.addEventListener('click', () => vals[1].set(vals[1].get() + 1))
+ * }
+ *
+ * Object.keys(refs).forEach(key => {
+ *  refs[key](document.querySelector(`[data-ref="${key}"]`))
+ * })
+ *
+ *
+ */
 export function Counter() {
   let count = 0;
 
