@@ -1,6 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: ["src/pages/**/*.{ts,tsx,css}", "src/server/**/*.{ts,tsx,css}"],
+  content: ["src/pages/**/*.{ts,tsx,css}", "src/components/**/*.{ts,tsx,css}", "src/server/**/*.{ts,tsx,css}"],
   theme: {
     colors: {
       black: "#1F2D3D",
