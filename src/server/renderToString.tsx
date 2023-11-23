@@ -30,6 +30,8 @@ export function renderToString(node: ReactNode): string {
       const attrs = [];
       const children = [];
 
+      const docType = node.type === "html" ? "<!DOCTYPE html>" : "";
+
       for (const [key, val] of Object.entries(node.props)) {
         if (key === "children") {
           const vals = Array.isArray(val) ? val : [val];
@@ -41,7 +43,11 @@ export function renderToString(node: ReactNode): string {
         }
       }
 
-      return `<${node.type} ${attrs.join(" ")}>${children.join("")}</${node.type}>`;
+      if (node.props.children) {
+        return `${docType}<${[node.type, ...attrs].join(" ")}>${children.join("")}</${node.type}>`;
+      } else {
+        return `${docType}<${[node.type, ...attrs].join(" ")} />`;
+      }
     }
 
     if (typeof node.type == "function") {
