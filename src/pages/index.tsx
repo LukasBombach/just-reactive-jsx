@@ -1,6 +1,6 @@
 export default function Home() {
   return (
-    <main className="max-w-prose ml-24 mt-16 p-4">
+    <main>
       <header>
         <h1 className="">
           <span className="block font-serif text-6xl leading-[0.8em] [text-shadow:_1px_1px_2px_rgba(10,11,13,.8)] pl-2">
