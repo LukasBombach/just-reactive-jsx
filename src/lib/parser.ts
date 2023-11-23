@@ -1,5 +1,5 @@
-import { Statement } from "@swc/core";
 import { Visitor } from "@swc/core/Visitor";
+import { parse, print } from "@swc/core";
 
 import type {
   AssignmentExpression,
@@ -21,7 +21,32 @@ const dummySpan: Span = {
   ctxt: 0,
 };
 
-export function makeJsxAttributesReactive(ast: Program): void {
+import type { BunPlugin } from "bun";
+
+export const parserPlugin = (): BunPlugin => ({
+  name: "augment reactivity",
+  async setup(build) {
+    build.onLoad({ filter: /src\/pages\/.+\.tsx$/ }, async ({ path }) => {
+      const file = Bun.file(path);
+      const contents = await file.text();
+
+      const ast = await parse(contents, { syntax: "typescript", tsx: true });
+
+      makeJsxAttributesReactive(ast);
+      const { code: transformedCode } = await print(ast);
+
+      // console.debug(transformedCode);
+
+      // todo string concat is a quick hack to make it work
+      return {
+        contents:
+          'import "lib/tailwind.css";import { signal, computed } from "@maverick-js/signals";' + transformedCode,
+      };
+    });
+  },
+});
+
+function makeJsxAttributesReactive(ast: Program): void {
   const identifiers: Identifier[] = findAllIdentifiersWithinJsxAttributes(ast);
   const declarators: VariableDeclarator[] = findAllVariableDeclarators(ast, identifiers);
   const usages: Identifier[] = findAllUsagesOfDeclarations(ast, declarators);

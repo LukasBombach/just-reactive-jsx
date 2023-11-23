@@ -2,7 +2,7 @@ import autoprefixer from "autoprefixer";
 import cssnano from "cssnano";
 import postcss from "postcss";
 import tailwindcss from "tailwindcss";
-import augmentReactivity from "../parser/plugin";
+import { parserPlugin } from "./parser";
 import { renderToString } from "./renderToString";
 
 Bun.serve({
@@ -41,7 +41,7 @@ Bun.serve({
             });
           },
         },
-        augmentReactivity(),
+        parserPlugin(),
       ],
     });
 
