@@ -21,7 +21,7 @@ Bun.serve({
     const collectedCss: string[] = [];
 
     const bundle = await Bun.build({
-      entrypoints: ["src/lib/loader.tsx"],
+      entrypoints: ["src/server/loader.tsx"],
       define: {
         REQUESTED_PAGE_PATH: JSON.stringify(path),
       },

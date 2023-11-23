@@ -40,7 +40,7 @@ export const parserPlugin = (): BunPlugin => ({
       // todo string concat is a quick hack to make it work
       return {
         contents:
-          'import "lib/tailwind.css";import { signal, computed } from "@maverick-js/signals";' + transformedCode,
+          'import "server/tailwind.css";import { signal, computed } from "@maverick-js/signals";' + transformedCode,
       };
     });
   },
