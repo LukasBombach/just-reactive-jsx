@@ -20,21 +20,18 @@
  */
 /**
  * <input data-ref="1" value="0" />
- * <button data-ref="2">count</button>
+ * <button data-ref="2">count </button>
  *
- * const vals = {
- *  1: signal(0),
- * ]
+ * const count = signal(0);
  *
  * const refs = {
- *   1: el => effect(() => el.value = vals[1].get())),
- *   2: el => el.addEventListener('click', () => vals[1].set(vals[1].get() + 1))
+ *   1: el => effect(() => el.value = count.get())),
+ *   2: el => el.addEventListener('click', () => count.set(count.get() + 1))
  * }
  *
  * Object.keys(refs).forEach(key => {
  *  refs[key](document.querySelector(`[data-ref="${key}"]`))
  * })
- *
  *
  */
 export function Counter() {
@@ -43,7 +40,7 @@ export function Counter() {
   return (
     <section className="grid grid-rows-1 grid-cols-2 gap-4">
       <input className="text-midnight px-4 py-2 rounded-md" value={count} />
-      <button onClick={() => (count = count + 1)}>count</button>
+      <button onClick={() => (count = count + 1)}>count: {count}</button>
     </section>
   );
 }
