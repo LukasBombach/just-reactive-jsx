@@ -12,12 +12,12 @@
  * effect(() => {
  *  document.querySelector('[data-value="count"]').value = count()
  * })
- * 
+ *
  * document.querySelector('[data-onclick]').forEach((el) => {
  *
  * })
-
  */
+
 /**
  * <input data-ref="1" value="0" />
  * <button data-ref="2">count </button>
@@ -32,6 +32,20 @@
  * Object.keys(refs).forEach(key => {
  *  refs[key](document.querySelector(`[data-ref="${key}"]`))
  * })
+ */
+
+/**
+ * const input = document.querySelector('[data-ref="1"]')
+ * const button = document.querySelector('[data-ref="2"]')
+ *
+ * effect(() => {
+ * input.value = count()
+ * })
+ *
+ * button.addEventListener('click', () => {
+ * count.set(count.get() + 1)
+ * })
+ *
  *
  */
 export function Counter() {
