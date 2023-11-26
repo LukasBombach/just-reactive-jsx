@@ -5,6 +5,7 @@ import postcss from "postcss";
 import tailwindcss from "tailwindcss";
 import { Document } from "pages/_document";
 import { parserPlugin } from "server/parser";
+import { extractPlugin } from "server/extractJs";
 import { renderToString } from "server/renderToString";
 
 plugin(parserPlugin());
@@ -17,13 +18,13 @@ async function getTailwindCss() {
 }
 
 async function getClientJs(...entrypoints: string[]) {
-  const { outputs, logs } = await Bun.build({ entrypoints });
+  const { outputs, logs } = await Bun.build({ entrypoints, plugins: [extractPlugin({ debug: true })] });
 
   logs.forEach(log => console.log(log));
 
-  for (const output of outputs) {
-    console.log(`✨ ${await output.text()}`);
-  }
+  // for (const output of outputs) {
+  //   console.log(`✨ ${await output.text()}`);
+  // }
 }
 
 Bun.serve({
@@ -39,8 +40,6 @@ Bun.serve({
 
     const { default: Page } = await import(path);
     const tailwindCss = await getTailwindCss();
-
-    console.log(`\n📄 ${path}`);
 
     await getClientJs(`src/server/${path}`);
 
