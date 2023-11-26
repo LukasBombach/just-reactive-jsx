@@ -39,11 +39,11 @@
  * const button = document.querySelector('[data-ref="2"]')
  *
  * effect(() => {
- * input.value = count()
+ *  input.value = count()
  * })
  *
  * button.addEventListener('click', () => {
- * count.set(count.get() + 1)
+ *  count.set(count.get() + 1)
  * })
  *
  *

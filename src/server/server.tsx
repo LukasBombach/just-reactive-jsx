@@ -1,9 +1,13 @@
+import { plugin } from "bun";
 import autoprefixer from "autoprefixer";
 import cssnano from "cssnano";
 import postcss from "postcss";
 import tailwindcss from "tailwindcss";
 import { Document } from "pages/_document";
+import { parserPlugin } from "server/parser";
 import { renderToString } from "server/renderToString";
+
+plugin(parserPlugin({ debug: true }));
 
 async function getTailwindCss() {
   const tailwind = "@tailwind base;@tailwind components;@tailwind utilities;";

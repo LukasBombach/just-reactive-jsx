@@ -23,10 +23,10 @@ const dummySpan: Span = {
 
 import type { BunPlugin } from "bun";
 
-export const parserPlugin = (): BunPlugin => ({
+export const parserPlugin = (options: { debug?: boolean } = {}): BunPlugin => ({
   name: "augment reactivity",
   async setup(build) {
-    build.onLoad({ filter: /src\/pages\/.+\.tsx$/ }, async ({ path }) => {
+    build.onLoad({ filter: /src\/(pages|components)\/.+\.tsx$/ }, async ({ path }) => {
       const file = Bun.file(path);
       const contents = await file.text();
 
@@ -35,7 +35,9 @@ export const parserPlugin = (): BunPlugin => ({
       makeJsxAttributesReactive(ast);
       const { code: transformedCode } = await print(ast);
 
-      // console.debug(transformedCode);
+      if (options.debug) {
+        console.debug(transformedCode);
+      }
 
       // todo string concat is a quick hack to make it work
       return {
