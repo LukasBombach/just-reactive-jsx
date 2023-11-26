@@ -1,6 +1,6 @@
 import type { ReactElement, ReactNode } from "react";
 
-export function renderToString(node: ReactNode): string {
+export function renderToString(node: ReactNode | (() => ReactNode)): string {
   if (typeof node === "boolean") {
     return "";
   }
@@ -32,12 +32,18 @@ export function renderToString(node: ReactNode): string {
 
       const docType = node.type === "html" ? "<!DOCTYPE html>" : "";
 
-      for (const [key, val] of Object.entries(node.props)) {
+      for (let [key, val] of Object.entries(node.props)) {
+        if (typeof val === "function") {
+          val = val();
+        }
+
+        if (key === "className") {
+          key = "class";
+        }
+
         if (key === "children") {
           const vals = Array.isArray(val) ? val : [val];
           children.push(...vals.map(renderToString));
-        } else if (key === "className") {
-          attrs.push(`class="${val}"`);
         } else {
           attrs.push(`${key}="${val}"`);
         }
@@ -53,6 +59,10 @@ export function renderToString(node: ReactNode): string {
     if (typeof node.type == "function") {
       return renderToString(node.type(node.props));
     }
+  }
+
+  if (typeof node === "function") {
+    return renderToString(node());
   }
 
   console.warn(`Cannot handle react element type ${typeof node}`, node);
