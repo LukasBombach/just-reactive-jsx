@@ -7,13 +7,23 @@ import { Document } from "pages/_document";
 import { parserPlugin } from "server/parser";
 import { renderToString } from "server/renderToString";
 
-plugin(parserPlugin({ debug: true }));
+plugin(parserPlugin());
 
 async function getTailwindCss() {
   const tailwind = "@tailwind base;@tailwind components;@tailwind utilities;";
   const processor = postcss([autoprefixer(), tailwindcss(), cssnano()]);
   const result = await processor.process(tailwind, { from: import.meta.path });
   return result.css;
+}
+
+async function getClientJs(...entrypoints: string[]) {
+  const { outputs, logs } = await Bun.build({ entrypoints });
+
+  logs.forEach(log => console.log(log));
+
+  for (const output of outputs) {
+    console.log(`✨ ${await output.text()}`);
+  }
 }
 
 Bun.serve({
@@ -29,6 +39,10 @@ Bun.serve({
 
     const { default: Page } = await import(path);
     const tailwindCss = await getTailwindCss();
+
+    console.log(`\n📄 ${path}`);
+
+    await getClientJs(`src/server/${path}`);
 
     return new Response(
       renderToString(
