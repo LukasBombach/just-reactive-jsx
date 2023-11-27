@@ -27,10 +27,18 @@ async function getClientJs(...entrypoints: string[]) {
   // }
 }
 
-Bun.serve({
+const server = Bun.serve({
   port: 3000,
   development: true,
   async fetch(req: Request) {
+    const upgradeSuccessfully = server.upgrade(req);
+
+    // Check if the request is upgraded successfully
+    if (upgradeSuccessfully) {
+      // The request was successfully upgraded to a WebSocket connection
+      return undefined;
+    }
+
     const url = new URL(req.url);
     const path = url.pathname === "/" ? "../pages/index.tsx" : `../pages${url.pathname}.tsx`;
 
@@ -53,6 +61,11 @@ Bun.serve({
         headers: { "content-type": "text/html; charset=utf-8" },
       }
     );
+  },
+  websocket: {
+    open() {},
+    message() {},
+    close() {},
   },
 });
 

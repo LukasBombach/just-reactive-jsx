@@ -1,21 +1,9 @@
 import { Visitor } from "@swc/core/Visitor";
 import { parse, print } from "@swc/core";
 
-import type {
-  AssignmentExpression,
-  CallExpression,
-  Expression,
-  Identifier,
-  JSXAttrValue,
-  JSXExpressionContainer,
-  Node,
-  Program,
-  Span,
-  VariableDeclaration,
-  VariableDeclarator,
-} from "@swc/types";
+import type * as t from "@swc/types";
 
-const span: Span = {
+const span: t.Span = {
   start: 0,
   end: 0,
   ctxt: 0,
@@ -46,20 +34,27 @@ import type { BunPlugin } from "bun";
 export const extractPlugin = (options: { debug?: boolean } = {}): BunPlugin => ({
   name: "extract js",
   async setup(build) {
-    build.onLoad({ filter: /src\/(pages|components)\/.+\.tsx$/ }, async ({ path, namespace }) => {
-      const ast = await parse(await Bun.file(path).text(), { syntax: "typescript", tsx: true });
+    build.onLoad({ filter: /src\/(pages|components)\/.+\.tsx$/ }, async ({ path }) => {
+      const program = await parse(await Bun.file(path).text(), { syntax: "typescript", tsx: true });
 
-      const { code: contents } = await print(ast, {
-        plugin: program => {
-          return program;
-        },
-      });
+      new MyVisitor().visitProgram(program);
+
+      const { code: contents } = await print(program);
 
       if (options.debug) {
-        console.debug(`\n\n📄 ${path}\n\n${contents}`);
+        // console.debug(`\n\n📄 ${path}\n\n${contents}`);
       }
 
       return { contents };
     });
   },
 });
+
+class MyVisitor extends Visitor {
+  visitJSXAttribute(node: t.JSXAttribute) {
+    if (node.name.type === "Identifier" && node.name.value.startsWith("on")) {
+      console.debug(node.name.value);
+    }
+    return node;
+  }
+}
