@@ -51,6 +51,8 @@ const server = Bun.serve({
 
     await getClientJs(`src/server/${path}`);
 
+    // console.log(" - ", 200, path);
+
     return new Response(
       renderToString(
         <Document criticalCss={tailwindCss}>
@@ -63,10 +65,16 @@ const server = Bun.serve({
     );
   },
   websocket: {
-    open() {},
+    open() {
+      // console.log(" - ", "ws", "open");
+      // console.log("✨ WebSocket connection opened");
+    },
     message() {},
-    close() {},
+    close() {
+      // console.log("✨ WebSocket connection closed");
+      // console.log(" - ", "ws", "close");
+    },
   },
 });
 
-console.log("\n✨ server started at http://localhost:3000");
+console.log("\n✨ server started at http://localhost:3000\n");

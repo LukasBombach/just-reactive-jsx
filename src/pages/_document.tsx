@@ -8,13 +8,15 @@ interface Props {
 function reloadOnWebSocketConnectionLoss() {
   const socket = new WebSocket("ws://localhost:3000");
 
-  socket.addEventListener("close", () => {
-    setTimeout(() => {
-      new WebSocket("ws://localhost:3000").addEventListener("open", () => {
-        location.reload();
-      });
-    }, 500);
-  });
+  function reloadOnReconnect() {
+    const socket = new WebSocket("ws://localhost:3000");
+    socket.addEventListener("open", () => {
+      location.reload();
+    });
+    socket.addEventListener("error", reloadOnReconnect);
+  }
+
+  socket.addEventListener("close", reloadOnReconnect);
 }
 
 export function Document({ criticalCss, children }: Props) {
