@@ -33,6 +33,11 @@ export function renderToString(node: ReactNode | (() => ReactNode)): string {
       const docType = node.type === "html" ? "<!DOCTYPE html>" : "";
 
       for (let [key, val] of Object.entries(node.props)) {
+        if (key.match(/^on[A-Z]/)) {
+          attrs.push(`${key}="--omit--"`);
+          continue;
+        }
+
         if (typeof val === "function") {
           val = val();
         }
