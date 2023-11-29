@@ -18,16 +18,13 @@
 /**
  * Extract and leave as is
  *
- * // let count = 0;
- * const count = signal(0)
+ *   const count = signal(0)
  *
- * // <input value={count} />
- * const e1 = document.querySelector('[data-ref="1"]')
- * effect(() => { e1.value = count() })
+ *   const e1 = document.querySelector('[data-ref="1"]')
+ *   effect(() => { e1.value = count() })
  *
- * // <button onClick={() => (count = count + 1)}>count: {count}</button>
- * const e2 = document.querySelector('[data-ref="2"]')
- * e2.addEventListener('click', () => { count.set(count.get() + 1) })
+ *   const e2 = document.querySelector('[data-ref="2"]')
+ *   e2.addEventListener('click', () => { count.set(count.get() + 1) })
  */
 export function Counter() {
   let count = 0;

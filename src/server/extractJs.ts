@@ -48,8 +48,10 @@ export const extractPlugin = (options: { debug?: boolean } = {}): BunPlugin => (
       // Now that we have collected all the code we need for the page, we can
       // create a bundle with just that code.
 
-      const elements = getJsxOpeningElements(program);
-      const elementsWithEventHandlers = elements.filter(hasEventHandler);
+      const elements = getJsxOpeningElements(program).filter(hasEventHandler);
+
+      for (const el of elements) {
+      }
 
       const { code: contents } = await print(program);
       return { contents };
