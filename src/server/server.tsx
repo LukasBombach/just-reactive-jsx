@@ -77,4 +77,4 @@ const server = Bun.serve({
   },
 });
 
-console.log("\n✨ server started at http://localhost:3000\n");
+console.log("\n🚀 http://localhost:3000\n");
