@@ -1,52 +1,33 @@
 /**
- * <input data-value="count" />
- * <button data-onclick="eventhandler_1">count</button>
+ * Extract and create a script
  *
+ * // all signals
+ * const v1 = signal(0)
  *
+ * // all elements
+ * const e1 = document.querySelector('[data-ref="1"]')
+ * const e2 = document.querySelector('[data-ref="2"]')
+ *
+ * // all attributes / effects
+ * effect(() => { input.value = v1() })
+ *
+ * // all event listeners
+ * e2.addEventListener('click', () => { v1.set(v1.get() + 1) })
+ */
+
+/**
+ * Extract and leave as is
+ *
+ * // let count = 0;
  * const count = signal(0)
  *
- * function eventhandler_1() {
- *  count.set(count.get() + 1)
- * }
+ * // <input value={count} />
+ * const e1 = document.querySelector('[data-ref="1"]')
+ * effect(() => { e1.value = count() })
  *
- * effect(() => {
- *  document.querySelector('[data-value="count"]').value = count()
- * })
- *
- * document.querySelector('[data-onclick]').forEach((el) => {
- *
- * })
- */
-
-/**
- * <input data-ref="1" value="0" />
- * <button data-ref="2">count </button>
- *
- * const count = signal(0);
- *
- * const refs = {
- *   1: el => effect(() => el.value = count.get())),
- *   2: el => el.addEventListener('click', () => count.set(count.get() + 1))
- * }
- *
- * Object.keys(refs).forEach(key => {
- *  refs[key](document.querySelector(`[data-ref="${key}"]`))
- * })
- */
-
-/**
- * const input = document.querySelector('[data-ref="1"]')
- * const button = document.querySelector('[data-ref="2"]')
- *
- * effect(() => {
- *  input.value = count()
- * })
- *
- * button.addEventListener('click', () => {
- *  count.set(count.get() + 1)
- * })
- *
- *
+ * // <button onClick={() => (count = count + 1)}>count: {count}</button>
+ * const e2 = document.querySelector('[data-ref="2"]')
+ * e2.addEventListener('click', () => { count.set(count.get() + 1) })
  */
 export function Counter() {
   let count = 0;

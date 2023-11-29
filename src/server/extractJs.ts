@@ -37,24 +37,40 @@ export const extractPlugin = (options: { debug?: boolean } = {}): BunPlugin => (
     build.onLoad({ filter: /src\/(pages|components)\/.+\.tsx$/ }, async ({ path }) => {
       const program = await parse(await Bun.file(path).text(), { syntax: "typescript", tsx: true });
 
-      new MyVisitor().visitProgram(program);
+      // Find all JsxOpeningElements
+      // For each element iterate over attributes
+      // If there is an event handler, add the element to a list of all elements
+      // Also add the event handler to a list of all event handlers
+
+      // For each event handler, find the code it depends on and add that to the list
+      // For each added dependency find the code it depends on and add that to the list
+
+      // Now that we have collected all the code we need for the page, we can
+      // create a bundle with just that code.
+
+      const elements = getJsxOpeningElements(program);
+      const elementsWithEventHandlers = elements.filter(hasEventHandler);
 
       const { code: contents } = await print(program);
-
-      if (options.debug) {
-        // console.debug(`\n\n📄 ${path}\n\n${contents}`);
-      }
-
       return { contents };
     });
   },
 });
 
-class MyVisitor extends Visitor {
-  visitJSXAttribute(node: t.JSXAttribute) {
-    if (node.name.type === "Identifier" && node.name.value.startsWith("on")) {
-      console.debug(node.name.value);
+function getJsxOpeningElements(program: t.Program): t.JSXOpeningElement[] {
+  const elements = new Set<t.JSXOpeningElement>();
+  class MyVisitor extends Visitor {
+    visitJSXOpeningElement(node: t.JSXOpeningElement) {
+      elements.add(node);
+      return node;
     }
-    return node;
   }
+  new MyVisitor().visitProgram(program);
+  return Array.from(elements);
+}
+
+function hasEventHandler(el: t.JSXOpeningElement): boolean {
+  return el.attributes.some(
+    attr => attr.type === "JSXAttribute" && attr.name.type === "Identifier" && attr.name.value.startsWith("on")
+  );
 }
