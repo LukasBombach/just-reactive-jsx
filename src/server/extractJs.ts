@@ -51,7 +51,36 @@ export const extractPlugin = (options: { debug?: boolean } = {}): BunPlugin => (
       const elements = getJsxOpeningElements(program).filter(hasEventHandler);
 
       for (const el of elements) {
+        el.attributes.forEach(attr => {
+          if (attr.type === "JSXAttribute" && attr.name.type === "Identifier" && attr.name.value.startsWith("on")) {
+            console.log(attr.name.value);
+          }
+        });
       }
+
+      const elements2 = new Map<t.JSXOpeningElement, t.JSXAttribute[]>();
+      class Elements2Visitor extends Visitor {
+        visitJSXOpeningElement(node: t.JSXOpeningElement) {
+          const attrs = elements2.get(node) || [];
+          for (const attr of node.attributes) {
+            if (attr.type === "JSXAttribute" && attr.name.type === "Identifier" && attr.name.value.startsWith("on")) {
+              attrs.push(attr);
+            }
+          }
+          elements2.set(node, attrs);
+          return node;
+        }
+      }
+      new Elements2Visitor().visitProgram(program);
+
+      const extracted = await parse(
+        Array.from(elements2.entries())
+          .map(([el, attrs], i) => {
+            return "";
+          })
+          .join("\n"),
+        { syntax: "ecmascript" }
+      );
 
       const { code: contents } = await print(program);
       return { contents };
