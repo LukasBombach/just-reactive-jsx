@@ -19,9 +19,11 @@ async function getTailwindCss() {
 
 async function getClientJs(...entrypoints: string[]) {
   // const { outputs, logs } = await Bun.build({ entrypoints, plugins: [extractPlugin({ debug: true })] });
-  const { outputs, logs } = await Bun.build({ entrypoints });
+  const { outputs, logs } = await Bun.build({ entrypoints, plugins: [parserPlugin()] });
 
   logs.forEach(log => console.log(log));
+
+  console.log(`\n✨ Client JS ${outputs.length}\n`);
 
   for (const output of outputs) {
     console.log(`
