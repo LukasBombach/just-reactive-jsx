@@ -9,20 +9,13 @@ export function getClientjs(input: string): string {
   // if the declaration is a variable declaration, find all references to it
 }
 
-/* export function getClientjs(input: string) {
-  const eventHanders = findEventHanders(input);
-  const dependencies: Node[] = [];
-
-  let newDependencies = findDependencies(eventHanders);
-  while (newDependencies.length > 0) {
-    dependencies.push(...newDependencies);
-    newDependencies = findDependencies(newDependencies);
-  }
-
-  mark(eventHanders);
-  mark(dependencies);
-} */
-
-// function findEventHanders(): Node[] {}
-// function findDependencies() {}
-// function findEffects() {}
+function extract(nodes: Node[]) {
+  // find all identifiers within the nodes
+  // get their declarations
+  // if the declaration is a function declaration, call extract on it
+  // if the declaration is a variable declaration, find all references to it
+  // for each reference
+  // if the reference is a jsx attribute, add it to the extracted code
+  // if the reference is a jsx child, add it to the extracted code
+  // add a todo for all other cases
+}
