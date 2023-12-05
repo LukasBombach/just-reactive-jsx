@@ -29,7 +29,7 @@ export function Document({ criticalCss, children }: Props) {
         {criticalCss && <style>{criticalCss}</style>}
         <script>({reloadOnWebSocketConnectionLoss.toString()})()</script>
       </head>
-      <body className="bg-midnight text-moon grid grid-rows-[4rem_1fr] grid-cols-[1fr_min(65ch,calc(100%_-_64px))_1fr] [&>*]:[grid-area:2/2/2/2] min-[847px]:grid-cols-[6rem_min(65ch,calc(100%_-_64px))_1fr]">
+      <body className="bg-midnight text-moon grid grid-rows-[6rem_1fr] grid-cols-[1fr_min(65ch,calc(100%_-_64px))_1fr] [&>*]:[grid-area:2/2/2/2] min-[847px]:grid-cols-[6rem_min(65ch,calc(100%_-_64px))_1fr]">
         {children}
       </body>
     </html>
