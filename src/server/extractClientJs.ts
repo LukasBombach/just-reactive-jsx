@@ -31,11 +31,18 @@ function getUsages(parent: AnyNode, declarators: t.VariableDeclarator[]) {
   return usages.filter(usage =>
     declarators.some(
       decl =>
-        decl.id !== usage &&
-        (decl.id as t.Identifier).value === usage.value &&
-        (decl.id as t.Identifier).span.ctxt === usage.span.ctxt
+        /* decl.id !== usage && */
+        (decl.id as t.Identifier).value === usage.value && (decl.id as t.Identifier).span.ctxt === usage.span.ctxt
     )
   );
+}
+
+function isInsideJsxAttribute(usage: t.Identifier) {
+  // TODO
+}
+
+function isInsideJsxChild(usage: t.Identifier) {
+  // TODO
 }
 
 function extract(containers: AnyNode[]) {
