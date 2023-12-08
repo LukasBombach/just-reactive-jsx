@@ -11,7 +11,18 @@ import { extractClientJs } from "server/extractClientJs";
 
 plugin(parserPlugin());
 
-extractClientJs(`const X = () => <button onClick={() => foo()} />`);
+extractClientJs(`
+function Counter() {
+  const count = signal(0);
+
+  return (
+    <section>
+      <input value={count} />
+      <button onClick={() => count.set(count() + 1)}>count: {count}</button>
+    </section>
+  );
+}
+`);
 
 async function getTailwindCss() {
   const tailwind = "@tailwind base;@tailwind components;@tailwind utilities;";

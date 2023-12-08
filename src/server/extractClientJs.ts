@@ -1,32 +1,19 @@
-import { Visitor } from "@swc/core/Visitor";
 import { parse } from "@swc/core";
+import { NodeFinder } from "./NodeFinder";
 
-import type * as t from "@swc/types";
-
-type AnyNode = t.Program | t.Statement | t.Expression | t.Declaration;
-type NodeType = AnyNode["type"];
-
-type AnyNodeOfType<T extends NodeType> = Extract<AnyNode, { type: T }>;
-type VisitorName = keyof Visitor;
+import type { AnyNode } from "./NodeFinder";
 
 export async function extractClientJs(input: string): Promise<string> {
   const ast = await parse(input, { syntax: "typescript", tsx: true });
-  //const extractedCode = findEventHanders(ast);
-  const identifiers = NodeFinder.find(ast, "JSXOpeningElement");
+  const identifiers = NodeFinder.find(ast, "JSXAttribute");
 
   console.log(identifiers);
 
   return input;
-
-  // within all event handlers
-  // find all identifiers that are not defined in the event handler
-  // find their declarations
-  // if the declaration is a function declaration, add it to the extracted code
-  // if the declaration is a variable declaration, find all references to it
 }
 
 function extract(containers: AnyNode[]) {
-  const nodes = containers.flatMap(node => NodeFinder.find(node, "Identifier"));
+  const nodes = NodeFinder.find(containers, "Identifier");
 
   // find all identifiers within the nodes
   // get their declarations
@@ -37,54 +24,3 @@ function extract(containers: AnyNode[]) {
   // if the reference is a jsx child, add it to the extracted code
   // add a todo for all other cases
 }
-
-class NodeFinder extends Visitor {
-  private nodes = new Set<AnyNode>();
-
-  public static find(parent: AnyNode, type: NodeType): AnyNodeOfType<NodeType>[] {
-    const finder = new NodeFinder();
-    return finder.find(parent, type);
-  }
-
-  private find(parent: AnyNode, type: NodeType): AnyNodeOfType<NodeType>[] {
-    this.nodes.clear();
-
-    // @ts-expect-error TypeScript is stupid
-    this[this.getVisitorName(type)] = (node: AnyNodeOfType<NodeType>) => {
-      this.nodes.add(node);
-      return node;
-    };
-
-    this.visitNode(parent);
-    return Array.from(this.nodes);
-  }
-
-  private visitNode(node: AnyNode) {
-    // @ts-expect-error TypeScript is stupid
-    this[this.getVisitorName(node.type)](node);
-  }
-
-  private getVisitorName(type: NodeType): VisitorName {
-    return `visit${type.charAt(0).toUpperCase() + type.slice(1)}` as VisitorName;
-  }
-}
-
-/* function findNodesByType<N extends AnyNode, T extends NodeType>(parent: N, type: T): AnyNodeOfType<T>[] {
-  const methodName  = `visit${type.charAt(0).toUpperCase() + type.slice(1)}`;
-
-  class NodeFinder<T extends NodeType> extends Visitor {
-    public nodes: AnyNodeOfType<T>[] = [];
-
-    constructor(private targetType: T) {
-      super();
-      (this as any)[methodName] = (node: AnyNode) => {
-        if (node.type === this.targetType) {
-          this.nodes.push(node as AnyNodeOfType<T>);
-        }
-      }
-    }
-
-  }
-
-}
- */
