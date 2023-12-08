@@ -1,15 +1,26 @@
 import { parse } from "@swc/core";
 import { NodeFinder } from "./NodeFinder";
 
+import type * as t from "@swc/types";
 import type { AnyNode } from "./NodeFinder";
 
 export async function extractClientJs(input: string): Promise<string> {
   const ast = await parse(input, { syntax: "typescript", tsx: true });
-  const identifiers = NodeFinder.find(ast, "JSXAttribute");
+  const jsxAttrs = NodeFinder.find(ast, "JSXAttribute");
+  const eventHandlers = jsxAttrs.filter(attr => (attr.name as t.Identifier).value?.match(/^on[A-Z]/));
+  const expContainers = NodeFinder.find(eventHandlers, "JSXExpressionContainer");
+  const identifiers = NodeFinder.find(expContainers, "Identifier");
+  const declarators = getDeclarators(ast, identifiers);
 
-  console.log(identifiers);
+  console.log(declarators);
 
   return input;
+}
+
+function getDeclarators(parent: AnyNode, id: t.Identifier | t.Identifier[]) {
+  const declarators = NodeFinder.find(parent, "VariableDeclarator");
+  const ids = Array.isArray(id) ? id : [id];
+  return declarators.filter(decl => ids.some(i => decl.id.value === i.value && decl.id.span.ctxt === i.span.ctxt));
 }
 
 function extract(containers: AnyNode[]) {

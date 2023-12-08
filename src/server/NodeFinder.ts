@@ -7,6 +7,7 @@ export type AnyNode =
   | t.Statement
   | t.Expression
   | t.Declaration
+  | t.VariableDeclarator
   | t.JSXOpeningElement
   | t.JSXAttribute
   | t.JSXExpressionContainer;
