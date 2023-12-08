@@ -13,6 +13,7 @@ export async function extractClientJs(input: string): Promise<string> {
   const declarators = getDeclarators(ast, identifiers);
   const usages = getUsages(ast, declarators);
 
+  console.log(input);
   console.log(usages);
 
   return input;
