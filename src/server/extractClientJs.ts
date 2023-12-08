@@ -6,8 +6,8 @@ import type { AnyNode } from "./NodeFinder";
 
 export async function extractClientJs(input: string): Promise<string> {
   const ast = await parse(input, { syntax: "typescript", tsx: true });
-  const jsxAttrs = NodeFinder.find(ast, "JSXAttribute");
-  const eventHandlers = jsxAttrs.filter(attr => (attr.name as t.Identifier).value?.match(/^on[A-Z]/));
+  const attrs = NodeFinder.find(ast, "JSXAttribute");
+  const eventHandlers = attrs.filter(attr => (attr.name as t.Identifier).value?.match(/^on[A-Z]/));
   const expContainers = NodeFinder.find(eventHandlers, "JSXExpressionContainer");
   const identifiers = NodeFinder.find(expContainers, "Identifier");
   const declarators = getDeclarators(ast, identifiers);
