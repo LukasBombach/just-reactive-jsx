@@ -9,7 +9,7 @@ type NodeType = AnyNode["type"];
 type AnyNodeOfType<T extends NodeType> = Extract<AnyNode, { type: T }>;
 type VisitorName = keyof Visitor;
 
-export async function getClientjs(input: string): string {
+export async function getClientjs(input: string): Promise<string> {
   const ast = await parse(input);
   //const extractedCode = findEventHanders(ast);
   const identifiers = NodeFinder.find(ast, "Identifier");
@@ -48,10 +48,13 @@ class NodeFinder extends Visitor {
 
   private find(parent: AnyNode, type: NodeType): AnyNodeOfType<NodeType>[] {
     this.nodes.clear();
+
+    // @ts-expect-error TypeScript is stupid
     this[this.getVisitorName(node)] = (node: AnyNodeOfType<NodeType>) => {
       this.nodes.add(node);
       return node;
     };
+
     this.visitNode(parent);
     return Array.from(this.nodes);
   }
