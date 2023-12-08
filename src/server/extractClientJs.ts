@@ -9,10 +9,10 @@ type NodeType = AnyNode["type"];
 type AnyNodeOfType<T extends NodeType> = Extract<AnyNode, { type: T }>;
 type VisitorName = keyof Visitor;
 
-export async function getClientjs(input: string): Promise<string> {
-  const ast = await parse(input);
+export async function extractClientJs(input: string): Promise<string> {
+  const ast = await parse(input, { syntax: "typescript", tsx: true });
   //const extractedCode = findEventHanders(ast);
-  const identifiers = NodeFinder.find(ast, "Identifier");
+  const identifiers = NodeFinder.find(ast, "JSXOpeningElement");
 
   console.log(identifiers);
 
@@ -50,7 +50,7 @@ class NodeFinder extends Visitor {
     this.nodes.clear();
 
     // @ts-expect-error TypeScript is stupid
-    this[this.getVisitorName(node)] = (node: AnyNodeOfType<NodeType>) => {
+    this[this.getVisitorName(type)] = (node: AnyNodeOfType<NodeType>) => {
       this.nodes.add(node);
       return node;
     };
@@ -61,11 +61,11 @@ class NodeFinder extends Visitor {
 
   private visitNode(node: AnyNode) {
     // @ts-expect-error TypeScript is stupid
-    this[this.getVisitorName(node)](node);
+    this[this.getVisitorName(node.type)](node);
   }
 
-  private getVisitorName(node: AnyNode): VisitorName {
-    return `visit${node.type.charAt(0).toUpperCase() + node.type.slice(1)}` as VisitorName;
+  private getVisitorName(type: NodeType): VisitorName {
+    return `visit${type.charAt(0).toUpperCase() + type.slice(1)}` as VisitorName;
   }
 }
 

@@ -7,8 +7,11 @@ import { Document } from "pages/_document";
 import { parserPlugin } from "server/parser";
 import { extractPlugin } from "server/extractJs";
 import { renderToString } from "server/renderToString";
+import { extractClientJs } from "server/extractClientJs";
 
 plugin(parserPlugin());
+
+extractClientJs(`const X = () => <button onClick={() => foo()} />`);
 
 async function getTailwindCss() {
   const tailwind = "@tailwind base;@tailwind components;@tailwind utilities;";
