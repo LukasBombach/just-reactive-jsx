@@ -20,14 +20,19 @@ export async function extractClientJs(input: string): Promise<string> {
 
 function getDeclarators(parent: AnyNode, ids: t.Identifier[]) {
   const declarators = NodeFinder.find(parent, "VariableDeclarator");
-  return declarators.filter(decl => ids.some(i => decl.id.value === i.value && decl.id.span.ctxt === i.span.ctxt));
+  return declarators.filter(decl =>
+    ids.some(i => (decl.id as t.Identifier).value === i.value && (decl.id as t.Identifier).span.ctxt === i.span.ctxt)
+  );
 }
 
 function getUsages(parent: AnyNode, declarators: t.VariableDeclarator[]) {
   const usages = NodeFinder.find(parent, "Identifier");
   return usages.filter(usage =>
     declarators.some(
-      decl => decl.id !== usage && decl.id.value === usage.value && decl.id.span.ctxt === usage.span.ctxt
+      decl =>
+        decl.id !== usage &&
+        (decl.id as t.Identifier).value === usage.value &&
+        (decl.id as t.Identifier).span.ctxt === usage.span.ctxt
     )
   );
 }
