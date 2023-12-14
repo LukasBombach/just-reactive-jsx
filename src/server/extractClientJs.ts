@@ -35,6 +35,12 @@ function getCodeToExtract(container: AnyNode, nodes: AnyNode[]): AnyNode[] {
     }
 
     if (node.type === "Identifier") {
+      const declarator = getParent(container, node, "VariableDeclarator");
+      if (declarator) {
+        extract.add(declarator);
+        return;
+      }
+
       const jsxAttr = getParent(container, node, "JSXAttribute");
       if (jsxAttr) {
         extract.add(jsxAttr);
