@@ -49,7 +49,12 @@ function getCodeToExtract(container: AnyNode, nodes: AnyNode[]): AnyNode[] {
 
       const jsxElement = getParent(container, node, "JSXElement");
       const jsxExpressionContainer = getParent(container, node, "JSXExpressionContainer");
-      if (jsxElement && jsxExpressionContainer && jsxElement?.children.includes(jsxExpressionContainer)) {
+
+      if (jsxElement?.children) {
+        console.log("children", jsxElement.children);
+      }
+
+      if (jsxElement && jsxExpressionContainer && jsxElement.children.includes(jsxExpressionContainer)) {
         extract.add(jsxExpressionContainer.expression);
         return;
       }
@@ -66,15 +71,7 @@ function getCodeToExtract(container: AnyNode, nodes: AnyNode[]): AnyNode[] {
 
 function getParent<T extends NodeType>(container: AnyNode, node: AnyNode, type: T): AnyNodeOfType<T> | null {
   const possibleParents = NodeFinder.byType(container, type);
-
-  // console.log("possibleParents", possibleParents);
-
-  for (const parent of possibleParents) {
-    if (NodeFinder.contains(parent, node)) {
-      return parent;
-    }
-  }
-  return null;
+  return possibleParents.findLast(parent => NodeFinder.contains(parent, node)) ?? null;
 }
 
 function isInAttr(usage: t.Identifier): boolean {
