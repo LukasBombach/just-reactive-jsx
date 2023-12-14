@@ -18,15 +18,19 @@ type VisitorName = keyof Visitor;
 export class NodeFinder extends Visitor {
   private nodes = new Set<AnyNode>();
 
-  public static find<T extends NodeType>(parent: AnyNode | AnyNode[], type: T): AnyNodeOfType<T>[] {
+  public static byType<T extends NodeType>(parent: AnyNode | AnyNode[], type: T): AnyNodeOfType<T>[] {
     const finder = new NodeFinder();
     if (Array.isArray(parent)) {
-      return parent.flatMap(node => finder.find(node, type));
+      return parent.flatMap(node => finder.byType(node, type));
     }
-    return finder.find(parent, type);
+    return finder.byType(parent, type);
   }
 
-  private find<T extends NodeType>(parent: AnyNode, type: T): AnyNodeOfType<T>[] {
+  public static contains(parent: AnyNode, child: AnyNode): Boolean {
+    return NodeFinder.byType(parent, child.type).some(node => node === child);
+  }
+
+  private byType<T extends NodeType>(parent: AnyNode, type: T): AnyNodeOfType<T>[] {
     this.nodes.clear();
 
     // @ts-expect-error TypeScript is stupid
