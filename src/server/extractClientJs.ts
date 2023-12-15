@@ -1,4 +1,4 @@
-import { parse } from "@swc/core";
+import { parse, print } from "@swc/core";
 import { NodeFinder } from "./NodeFinder";
 
 import type * as t from "@swc/types";
@@ -13,13 +13,44 @@ export async function extractClientJs(input: string): Promise<string> {
   const declarators = getDeclarators(ast, identifiers);
   const usages = getUsages(ast, declarators);
 
-  const extract: AnyNode[] = getCodeToExtract(ast, [...declarators, ...usages]).toSorted(
-    // @ts-expect-error too lazy to fix
-    (a, b) => a.span.start - b.span.start
-  );
+  const span: t.Span = { start: 0, end: 0, ctxt: 0 };
+
+  const extract: t.Script["body"] = getCodeToExtract(ast, [...declarators, ...usages])
+    .toSorted(
+      // @ts-expect-error too lazy to fix
+      (a, b) => a.span.start - b.span.start
+    )
+    .map(node => {
+      if (node.type === "VariableDeclarator") {
+        return {
+          type: "VariableDeclaration",
+          kind: "const", // todo WRONG! always const is wrong
+          declarations: [node],
+          span,
+        };
+      }
+    })
+    .filter(Boolean);
+
+  const outputScript: t.Script = {
+    type: "Script",
+    span,
+    // @ts-expect-error types are wrongfully defined
+    interpreter: null,
+    body: extract,
+  };
+
+  const { code: output } = await print(outputScript);
 
   console.log(input);
-  console.log(extract);
+
+  console.log("⌄⌄⌄⌄⌄⌄⌄⌄\n");
+
+  console.log(outputScript);
+
+  console.log("\n⌄⌄⌄⌄⌄⌄⌄⌄\n");
+
+  console.log(output);
 
   return input;
 }
