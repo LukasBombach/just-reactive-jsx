@@ -79,6 +79,20 @@ el(1).event("click", () => count.set(count() + 1));
 el(2).set(count);
 ```
 
+declarative approach
+
+```tsx
+export const values = {
+  count: 0,
+};
+
+export const hydrate = [
+  [0, "attr", "value", count],
+  [1, "event", "click", () => count.set(count() + 1)],
+  [2, "set", count],
+];
+```
+
 --
 
 --
