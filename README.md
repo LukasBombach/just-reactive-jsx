@@ -67,6 +67,28 @@ function Counter() {
 </section>
 ```
 
+### Client Js
+
+```tsx
+import { signal, attr, event, child } from "runtime";
+
+const count = signal(0);
+
+attr(0, "value", count);
+event(1, "click", () => count.set(count() + 1));
+child(2, count);
+```
+
+--
+
+--
+
+--
+
+--
+
+### alternative SSR html
+
 ```html
 <section>
   <script type="text/h-0" /></script>
@@ -79,16 +101,4 @@ function Counter() {
     <script type="text/h-2" /></script>
   </button>
 </section>
-```
-
-### Client Js
-
-```tsx
-import { signal, attr, event, child } from "runtime";
-
-const count = signal(0);
-
-attr(0, "value", count);
-event(1, "click", () => count.set(count() + 1));
-child(2, 0, count);
 ```
