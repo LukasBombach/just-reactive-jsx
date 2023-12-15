@@ -49,7 +49,7 @@ function getCodeToExtract(container: AnyNode, nodes: AnyNode[]): AnyNode[] {
       const jsxElement = getParent(container, node, "JSXElement");
       const jsxExpressionContainer = getParent(container, node, "JSXExpressionContainer");
       if (jsxElement && jsxExpressionContainer && jsxElement.children.includes(jsxExpressionContainer)) {
-        extract.add(jsxExpressionContainer.expression);
+        extract.add(jsxExpressionContainer);
         return;
       }
 
