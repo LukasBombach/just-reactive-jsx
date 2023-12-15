@@ -1,5 +1,4 @@
 import { parse } from "@swc/core";
-import { Visitor } from "@swc/core/Visitor";
 import { NodeFinder } from "./NodeFinder";
 
 import type * as t from "@swc/types";
@@ -20,7 +19,6 @@ export async function extractClientJs(input: string): Promise<string> {
 
   console.log(input);
   console.log(extract);
-  // console.log(usages);
 
   return input;
 }
@@ -49,11 +47,6 @@ function getCodeToExtract(container: AnyNode, nodes: AnyNode[]): AnyNode[] {
 
       const jsxElement = getParent(container, node, "JSXElement");
       const jsxExpressionContainer = getParent(container, node, "JSXExpressionContainer");
-
-      if (jsxElement?.children) {
-        console.log("children", jsxElement.children);
-      }
-
       if (jsxElement && jsxExpressionContainer && jsxElement.children.includes(jsxExpressionContainer)) {
         extract.add(jsxExpressionContainer.expression);
         return;
@@ -70,16 +63,32 @@ function getCodeToExtract(container: AnyNode, nodes: AnyNode[]): AnyNode[] {
 }
 
 function getParent<T extends NodeType>(container: AnyNode, node: AnyNode, type: T): AnyNodeOfType<T> | null {
-  const possibleParents = NodeFinder.byType(container, type);
+  const possibleParents = getByType(container, type);
   return possibleParents.findLast(parent => NodeFinder.contains(parent, node)) ?? null;
 }
 
-function isInAttr(usage: t.Identifier): boolean {
-  // TODO
-}
+function getByType<T extends NodeType>(container: AnyNode, type: T): AnyNodeOfType<T>[] {
+  const result = new Set<AnyNodeOfType<T>>();
 
-function isInChild(usage: t.Identifier): boolean {
-  // TODO
+  const iterate = (obj: AnyNode) => {
+    Object.keys(obj).forEach(key => {
+      if (key === "type" && obj[key] === type) {
+        result.add(obj as AnyNodeOfType<T>);
+      }
+
+      if (typeof obj[key] === "object" && obj[key] !== null) {
+        iterate(obj[key]);
+      }
+
+      if (Array.isArray(obj[key])) {
+        obj[key].forEach((item: AnyNode) => iterate(item));
+      }
+    });
+  };
+
+  iterate(container);
+
+  return [...result];
 }
 
 function getDeclarators(parent: AnyNode, ids: t.Identifier[]) {
