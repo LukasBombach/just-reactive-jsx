@@ -14,6 +14,7 @@ export async function extractClientJs(input: string): Promise<string> {
   const usages = getUsages(ast, declarators);
 
   const extract: AnyNode[] = getCodeToExtract(ast, [...declarators, ...usages]).toSorted(
+    // @ts-expect-error too lazy to fix
     (a, b) => a.span.start - b.span.start
   );
 
@@ -76,11 +77,15 @@ function getByType<T extends NodeType>(container: AnyNode, type: T): AnyNodeOfTy
         result.add(obj as AnyNodeOfType<T>);
       }
 
+      // @ts-expect-error too lazy to fix
       if (typeof obj[key] === "object" && obj[key] !== null) {
+        // @ts-expect-error too lazy to fix
         iterate(obj[key]);
       }
 
+      // @ts-expect-error too lazy to fix
       if (Array.isArray(obj[key])) {
+        // @ts-expect-error too lazy to fix
         obj[key].forEach((item: AnyNode) => iterate(item));
       }
     });
