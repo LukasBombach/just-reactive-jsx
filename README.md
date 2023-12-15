@@ -70,13 +70,13 @@ function Counter() {
 ### Client Js
 
 ```tsx
-import { signal, attr, event, child } from "runtime";
+import { signal, el } from "runtime";
 
 const count = signal(0);
 
-attr(0, "value", count);
-event(1, "click", () => count.set(count() + 1));
-child(2, count);
+el(0).attr("value", count);
+el(1).event("click", () => count.set(count() + 1));
+el(2).set(count);
 ```
 
 --
@@ -87,7 +87,17 @@ child(2, count);
 
 --
 
-### alternative SSR html
+### alternatives
+
+```tsx
+import { signal, attr, event, child } from "runtime";
+
+const count = signal(0);
+
+attr(0, "value", count);
+event(1, "click", () => count.set(count() + 1));
+child(2, count);
+```
 
 ```html
 <section>
