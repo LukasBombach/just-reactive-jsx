@@ -29,6 +29,121 @@ export async function extractClientJs(input: string): Promise<string> {
           span,
         };
       }
+
+      if (node.type === "JSXAttribute") {
+        const name = (node.name as t.Identifier).value;
+        const event = name.match(/^on[A-Z]/) ? name.replace(/^on/, "").toLowerCase() : null;
+        const expression = (node.value as t.JSXExpressionContainer).expression;
+
+        if (event) {
+          return {
+            type: "ExpressionStatement",
+            span,
+            expression: {
+              type: "CallExpression",
+              span,
+              callee: {
+                type: "MemberExpression",
+                span,
+                object: {
+                  type: "Identifier",
+                  span,
+                  value: "x",
+                  optional: false,
+                },
+                property: {
+                  type: "Identifier",
+                  span,
+                  value: "addEventListener",
+                  optional: false,
+                },
+              },
+              arguments: [
+                {
+                  spread: null,
+                  expression: {
+                    type: "StringLiteral",
+                    span,
+                    value: event,
+                  },
+                },
+                {
+                  spread: null,
+                  expression: expression,
+                },
+              ],
+              typeArguments: null,
+            },
+          };
+        } else {
+          return {
+            type: "ExpressionStatement",
+            span,
+            expression: {
+              type: "CallExpression",
+              span,
+              callee: {
+                type: "Identifier",
+                span,
+                value: "effect",
+                optional: false,
+              },
+              arguments: [
+                {
+                  spread: null,
+                  expression: {
+                    type: "ArrowFunctionExpression",
+                    span,
+                    params: [],
+                    body: {
+                      type: "CallExpression",
+                      span,
+                      callee: {
+                        type: "MemberExpression",
+                        span,
+                        object: {
+                          type: "Identifier",
+                          span,
+                          value: "x",
+                          optional: false,
+                        },
+                        property: {
+                          type: "Identifier",
+                          span,
+                          value: "setAttribute",
+                          optional: false,
+                        },
+                      },
+                      arguments: [
+                        {
+                          spread: null,
+                          expression: {
+                            type: "StringLiteral",
+                            span,
+                            value: name,
+                          },
+                        },
+                        {
+                          spread: null,
+                          expression,
+                        },
+                      ],
+                      typeArguments: null,
+                    },
+                    async: false,
+                    generator: false,
+                    typeParameters: null,
+                    returnType: null,
+                  },
+                },
+              ],
+              typeArguments: null,
+            },
+          };
+        }
+      }
+
+      console.warn("Unknown node type", node.type);
     })
     .filter(Boolean);
 
