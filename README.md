@@ -69,9 +69,25 @@ function Counter() {
 
 ### Client Js
 
-```tsx
-// declarative approach that maintains the structure of the component
+declarative approach that maintains the structure of the component
 
+#### first step here
+
+```tsx
+import { signal, hydrate } from "runtime";
+
+const count = signal(0); // todo get initial value from ssr
+
+hydrate([
+  [0, "attr", "value", count],
+  [1, "event", "click", () => count.set(count() + 1)],
+  [2, "set", count],
+]);
+```
+
+#### then this
+
+```tsx
 function Counter() {
   const count = signal(0); // todo get initial value from ssr
 
