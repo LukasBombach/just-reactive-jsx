@@ -70,6 +70,30 @@ function Counter() {
 ### Client Js
 
 ```tsx
+// declarative approach that maintains the structure of the component
+
+function Counter() {
+  const count = signal(0); // todo get initial value from ssr
+
+  return [
+    [0, "attr", "value", count],
+    [1, "event", "click", () => count.set(count() + 1)],
+    [2, "set", count],
+  ];
+}
+```
+
+--
+
+--
+
+--
+
+--
+
+### alternatives
+
+```tsx
 import { signal, el } from "runtime";
 
 const count = signal(0);
@@ -79,7 +103,7 @@ el(1).event("click", () => count.set(count() + 1));
 el(2).set(count);
 ```
 
-declarative approach
+#### declarative approach
 
 ```tsx
 export const values = {
@@ -92,16 +116,6 @@ export const hydrate = [
   [2, "set", count],
 ];
 ```
-
---
-
---
-
---
-
---
-
-### alternatives
 
 ```tsx
 import { signal, attr, event, child } from "runtime";
