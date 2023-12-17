@@ -94,7 +94,7 @@ function Counter() {
   return [
     [0, "attr", "value", count],
     [1, "event", "click", () => count.set(count() + 1)],
-    [2, "set", count],
+    [2, "child", count],
   ];
 }
 ```
