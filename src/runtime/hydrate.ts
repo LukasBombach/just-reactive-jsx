@@ -8,6 +8,7 @@ type HydrationFn<D> = (_props: null, initialData: D) => Hydration[];
 
 export function hydrate<T>(Component: HydrationFn<T>, initialData: T) {
   const hydrate = Component(null, initialData);
+
   for (const [id, type, name, value] of hydrate) {
     const el = document.querySelector(`r\\:${id}`) as HTMLElement;
 
