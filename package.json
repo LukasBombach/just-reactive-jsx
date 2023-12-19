@@ -3,7 +3,8 @@
   "module": "index.tsx",
   "type": "module",
   "scripts": {
-    "dev": "bun --watch src/server/server.tsx"
+    "dev": "bun --watch src/server/server.tsx",
+    "hydration_test": "bun --watch hydration_test/server.ts"
   },
   "devDependencies": {
     "@maverick-js/signals": "5.11.4",
