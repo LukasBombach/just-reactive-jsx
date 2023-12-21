@@ -1,4 +1,4 @@
 import { hydrate } from "./hydrate";
 import { Counter } from "./Counter";
 
-hydrate(Counter, [0]);
+hydrate(Counter, [5]);
