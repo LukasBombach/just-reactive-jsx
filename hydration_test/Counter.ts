@@ -5,8 +5,8 @@ export const Counter: HydrationFn<[number]> = (_props, initialData) => {
   const count = signal(initialData[0]);
 
   return [
-    [0, "attr", "value", count],
-    [1, "event", "click", () => count.set(count() + 1)],
-    [2, "child", "", count],
+    ["attr", "value", count],
+    ["event", "click", () => count.set(count() + 1)],
+    ["child", "", count],
   ];
 };
