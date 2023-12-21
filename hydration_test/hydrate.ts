@@ -1,4 +1,3 @@
-import { signal } from "@maverick-js/signals";
 import { attr } from "./attr";
 import { event } from "./event";
 import { child } from "./child";
@@ -6,13 +5,11 @@ import { child } from "./child";
 export type Hydration = ["attr" | "event" | "child", string, any];
 export type HydrationFn<D> = (_props: null, initialData: D) => Hydration[];
 
-let globalI = 0;
-
-export function hydrate<T>(Component: HydrationFn<T>, initialData: T) {
+export function hydrate<T>(Component: HydrationFn<T>, initialData: T, refs: number[]) {
   const hydrate = Component(null, initialData);
 
-  for (const [type, name, value] of hydrate) {
-    const el = document.querySelector(`[r\\:${globalI}]`) as HTMLElement;
+  hydrate.forEach(([type, name, value], i) => {
+    const el = document.querySelector(`[r\\:${refs[i]}]`) as HTMLElement;
 
     if (type === "attr") {
       attr(el, name, value);
@@ -25,7 +22,5 @@ export function hydrate<T>(Component: HydrationFn<T>, initialData: T) {
     if (type === "child") {
       child(el, value);
     }
-
-    globalI++;
-  }
+  });
 }
