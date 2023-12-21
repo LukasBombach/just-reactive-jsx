@@ -8,7 +8,12 @@ const server = Bun.serve({
   async fetch(req: Request) {
     const url = new URL(req.url);
 
-    // Serve index.html for the root path
+    // Browser Requests
+    if (["/favicon.ico", "/serviceWoker.js"].includes(url.pathname)) {
+      return new Response();
+    }
+
+    // Index HTML
     if (url.pathname === "/") {
       const indexPath = join(__dirname, "index.html");
       return new Response(Bun.file(indexPath), {
@@ -16,9 +21,9 @@ const server = Bun.serve({
       });
     }
 
-    // Serve bundled index.js for /index.js path
+    // Inde JS
     if (url.pathname === "/index.js") {
-      const { outputs, logs } = await Bun.build({ entrypoints: [join(__dirname, "index.ts")] });
+      const { outputs, logs } = await Bun.build({ entrypoints: [join(__dirname, "index.ts")], minify: true });
 
       logs.forEach(log => console.log(log));
 
@@ -30,7 +35,7 @@ const server = Bun.serve({
       });
     }
 
-    // Respond with a 404 Not Found for any other paths
+    // 404 For everything else
     return new Response(null, { status: 404 });
   },
   port: 3000,
