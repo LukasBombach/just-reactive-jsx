@@ -21,7 +21,7 @@ const server = Bun.serve({
       });
     }
 
-    // Inde JS
+    // Index JS
     if (url.pathname === "/index.js") {
       const { outputs, logs } = await Bun.build({ entrypoints: [join(__dirname, "index.ts")], minify: true });
 
