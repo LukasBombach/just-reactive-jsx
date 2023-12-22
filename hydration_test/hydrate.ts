@@ -2,9 +2,9 @@ import { attr } from "./attr";
 import { event } from "./event";
 import { child } from "./child";
 
-type Hydration = ["attr" | "event" | "child", string, any];
-type HydrationFn<D> = (_props: null, initialData: D) => Hydration[];
-type HydrationData = { component: HydrationFn<any>; refs: string[]; data: any[] };
+export type Hydration = JSX.IntrinsicAttributes;
+export type HydrationFn<D> = (_props: null, initialData: D) => Hydration[];
+export type HydrationData = { component: HydrationFn<any>; refs: string[]; data: any[] };
 
 export function hydrate(hydrationData: HydrationData[]) {
   hydrationData.forEach(({ component, refs, data }) => {

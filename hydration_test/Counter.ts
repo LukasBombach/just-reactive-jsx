@@ -4,9 +4,10 @@ import type { HydrationFn } from "./hydrate";
 export const Counter: HydrationFn<[number]> = (_props, initialData) => {
   const count = signal(initialData[0]);
 
+  // prettier-ignore
   return [
-    ["attr", "value", count],
-    ["event", "click", () => count.set(count() + 1)],
-    ["child", "", count],
+    { value: count },
+    { onClick: () => count.set(count() + 1) },
+    { children: [count] }
   ];
 };
