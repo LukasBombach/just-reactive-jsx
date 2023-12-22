@@ -5,7 +5,7 @@ import { child } from "./child";
 export type HydrationFn<D> = (_props: null, initialData: D) => Record<string, any>[];
 export type HydrationData = { component: HydrationFn<any>; refs: string[]; data: any[] };
 
-export function hydrate(hydrationData: HydrationData[]) {
+export function hydrate(...hydrationData: HydrationData[]) {
   hydrationData.forEach(({ component, refs, data }) => {
     component(null, data).forEach((props, i) => {
       const el = document.querySelector(refs[i]) as HTMLElement;
