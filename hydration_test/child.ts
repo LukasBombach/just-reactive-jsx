@@ -5,7 +5,7 @@ import type { ReadSignal } from "@maverick-js/signals";
 
 export function child(el: HTMLElement | Text, signal: ReadSignal<unknown>) {
   const parent = el.parentElement!;
-  el = el.nextSibling!;
+  el = el.nextSibling as HTMLElement | Text;
 
   effect(() => {
     const val = signal();
