@@ -4,12 +4,12 @@ import { Counter } from "./Counter";
 hydrate([
   {
     component: Counter,
-    domRefs: ["[r\\:0]", "[r\\:1]", "[r\\:2]"],
-    initialData: [5],
+    refs: ["[r\\:0]", "[r\\:1]", "[r\\:2]"],
+    data: [5],
   },
   {
     component: Counter,
-    domRefs: ["[r\\:3]", "[r\\:4]", "[r\\:5]"],
-    initialData: [23],
+    refs: ["[r\\:3]", "[r\\:4]", "[r\\:5]"],
+    data: [23],
   },
 ]);

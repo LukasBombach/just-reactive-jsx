@@ -2,13 +2,14 @@ import { attr } from "./attr";
 import { event } from "./event";
 import { child } from "./child";
 
-export type Hydration = ["attr" | "event" | "child", string, any];
-export type HydrationFn<D> = (_props: null, initialData: D) => Hydration[];
+type Hydration = ["attr" | "event" | "child", string, any];
+type HydrationFn<D> = (_props: null, initialData: D) => Hydration[];
+type HydrationData = { component: HydrationFn<any>; refs: string[]; data: any[] };
 
-export function hydrate(hydrationData: { component: HydrationFn<any>; domRefs: string[]; initialData: any[] }[]) {
-  hydrationData.forEach(({ component, initialData, domRefs }) => {
-    component(null, initialData).forEach(([type, name, value], i) => {
-      const el = document.querySelector(domRefs[i]) as HTMLElement;
+export function hydrate(hydrationData: HydrationData[]) {
+  hydrationData.forEach(({ component, refs, data }) => {
+    component(null, data).forEach(([type, name, value], i) => {
+      const el = document.querySelector(refs[i]) as HTMLElement;
 
       if (type === "attr") {
         attr(el, name, value);
