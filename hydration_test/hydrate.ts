@@ -5,6 +5,8 @@ import { child } from "./child";
 export type Hydration = ["attr" | "event" | "child", string, any];
 export type HydrationFn<D> = (_props: null, initialData: D) => Hydration[];
 
+export function getDomByRef(...refs: string[]): HTMLElement | Text {}
+
 export function hydrate<T>(Component: HydrationFn<T>, initialData: T, refs: number[]) {
   const hydrate = Component(null, initialData);
 

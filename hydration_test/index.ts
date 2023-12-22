@@ -1,5 +1,17 @@
 import { hydrate } from "./hydrate";
 import { Counter } from "./Counter";
 
-hydrate(Counter, [5], [0, 1, 2]);
-hydrate(Counter, [23], [3, 4, 5]);
+const hydrationData = [
+  {
+    component: Counter,
+    domRefs: ["r:0", "r:1", "r:2"],
+    initialData: [5],
+  },
+  {
+    component: Counter,
+    domRefs: ["r:3", "r:4", "r:5"],
+    initialData: [23],
+  },
+];
+
+hydrate(hydrationData);
