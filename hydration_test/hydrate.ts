@@ -2,26 +2,26 @@ import { attr } from "./attr";
 import { event } from "./event";
 import { child } from "./child";
 
-export type Hydration = JSX.IntrinsicAttributes;
-export type HydrationFn<D> = (_props: null, initialData: D) => Hydration[];
+export type HydrationFn<D> = (_props: null, initialData: D) => Record<string, any>[];
 export type HydrationData = { component: HydrationFn<any>; refs: string[]; data: any[] };
 
 export function hydrate(hydrationData: HydrationData[]) {
   hydrationData.forEach(({ component, refs, data }) => {
-    component(null, data).forEach(([type, name, value], i) => {
+    component(null, data).forEach((props, i) => {
       const el = document.querySelector(refs[i]) as HTMLElement;
+      Object.entries(props).forEach(([name, value]) => {
+        if (name === "children") {
+          value.forEach((v: any) => child(el, v));
+          return;
+        }
 
-      if (type === "attr") {
+        if (name.match(/^on[A-Z]/)) {
+          event(el, name.replace(/^on/, "").toLowerCase(), value);
+          return;
+        }
+
         attr(el, name, value);
-      }
-
-      if (type === "event") {
-        event(el, name, value);
-      }
-
-      if (type === "child") {
-        child(el, value);
-      }
+      });
     });
   });
 }
