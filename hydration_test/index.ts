@@ -1,7 +1,7 @@
-import { hydrate2 } from "./hydrate";
+import { hydrate } from "./hydrate";
 import { Counter } from "./Counter";
 
-const hydrationData = [
+hydrate([
   {
     component: Counter,
     domRefs: ["[r\\:0]", "[r\\:1]", "[r\\:2]"],
@@ -12,6 +12,4 @@ const hydrationData = [
     domRefs: ["[r\\:3]", "[r\\:4]", "[r\\:5]"],
     initialData: [23],
   },
-];
-
-hydrate2(hydrationData);
+]);
