@@ -1,8 +1,8 @@
-import { signal } from "@maverick-js/signals";
+import { signalFromSsr } from "./hydrate";
 import type { HydrationFn } from "./hydrate";
 
-export const Counter: HydrationFn<[number]> = (_props, initialData) => {
-  const count = signal(initialData[0]);
+export const Counter: HydrationFn<[number]> = () => {
+  const count = signalFromSsr(0);
 
   // prettier-ignore
   return [

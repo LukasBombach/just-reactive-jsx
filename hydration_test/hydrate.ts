@@ -1,6 +1,9 @@
+import { signal } from "@maverick-js/signals";
 import { attr } from "./attr";
 import { event } from "./event";
 import { child } from "./child";
+
+import type { WriteSignal } from "@maverick-js/signals";
 
 export type HydrationFn<D> = (_props: null, initialData: D) => Record<string, any>[];
 export type HydrationData = { component: HydrationFn<any>; refs: string[]; data: any[] };
@@ -25,3 +28,10 @@ export function hydrate(...hydrationData: HydrationData[]) {
     });
   });
 }
+
+export function signalFromSsr(index: number): WriteSignal<any> {
+  const initialValue = getValueFromSsrStore(index);
+  return signal(initialValue);
+}
+
+function getValueFromSsrStore(index: number): any {}
