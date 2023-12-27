@@ -1,24 +1,7 @@
 import { parse } from "@swc/core";
-import { Visitor } from "@swc/core/Visitor";
 import { traverse } from "./traverse";
 
 import type * as t from "@swc/types";
-
-export class NodeFinder extends Visitor {
-  public nodes: object[] = [];
-
-  visitJSXElement(n: t.JSXElement): t.JSXElement {
-    const attrs = n.opening.attributes
-      .filter((n): n is t.JSXAttribute => n.type === "JSXAttribute")
-      .map(n => {
-        const name = n.name.type === "Identifier" ? n.name.value : n.name.name.value;
-        const value = n.value?.type === "JSXExpressionContainer" ? n.value.expression : undefined;
-        return [name, value];
-      });
-    this.nodes.push(Object.fromEntries(attrs));
-    return n;
-  }
-}
 
 const ast = await parse(
   `
