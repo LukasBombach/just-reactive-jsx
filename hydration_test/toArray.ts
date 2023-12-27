@@ -23,7 +23,7 @@ const nodes: object[] = [];
 
 function traverseNodes(node: t.Node, callback: (node: t.Node) => void) {
   traverse(node, n => {
-    if (isPlainObject(n) && isNode(n) && isJSXElement(n)) {
+    if (isPlainObject(n) && isNode(n)) {
       callback(n);
     }
   });
@@ -41,9 +41,13 @@ function traverseOnly<T>(node: t.Node, type: string, callback: (node: T) => void
 }
 
 function getAll<T>(node: t.Node, type: string): T[] {
-  const identifiers: T[] = [];
-  traverseOnly<T>(node, type, n => identifiers.push(n));
-  return identifiers;
+  const findings: T[] = [];
+  traverseNodes(node, n => {
+    if (n.type === type) {
+      findings.push(n);
+    }
+  });
+  return findings;
 }
 
 traverseOnly<t.JSXElement>(ast, "JSXElement", n => {
@@ -59,7 +63,7 @@ traverseOnly<t.JSXElement>(ast, "JSXElement", n => {
 });
 
 function isAffectedByStateUpdates(attr: t.JSXAttribute): boolean {
-  const identifiers = getAll<t.Identifier>(attr, "Identifier");
+  const identifiers = getAll<t.Identifier>(attr.value, "Identifier");
   const name = attr.name.type === "Identifier" ? attr.name.value : attr.name.name.value;
   console.log(name, identifiers);
   return true;
@@ -79,6 +83,10 @@ function isJSXElement(n: t.Node): n is t.JSXElement {
 
 function isJSXAttribute(n: t.Node): n is t.JSXAttribute {
   return n.type === "JSXAttribute";
+}
+
+function isIdentifier(n: t.Node): n is t.Identifier {
+  return n.type === "Identifier";
 }
 
 nodes.forEach(n => {
