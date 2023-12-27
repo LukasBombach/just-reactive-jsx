@@ -21,22 +21,47 @@ export function Counter() {
 
 const nodes: object[] = [];
 
-traverse(ast, n => {
-  if (isPlainObject(n) && isNode(n) && isJSXElement(n)) {
-    const attrs = n.opening.attributes
-      .filter(isJSXAttribute)
-      .filter(isAffectedByStateUpdates)
-      .map(n => {
-        const name = n.name.type === "Identifier" ? n.name.value : n.name.name.value;
-        const value = n.value;
-        return [name, value];
-      });
-    nodes.push(Object.fromEntries(attrs));
-  }
+function traverseNodes(node: t.Node, callback: (node: t.Node) => void) {
+  traverse(node, n => {
+    if (isPlainObject(n) && isNode(n) && isJSXElement(n)) {
+      callback(n);
+    }
+  });
+}
+
+/**
+ * todo the type parameter must match th ts type of the node
+ */
+function traverseOnly<T>(node: t.Node, type: string, callback: (node: T) => void) {
+  traverseNodes(node, n => {
+    if (n.type === type) {
+      callback(n as T);
+    }
+  });
+}
+
+function getAll<T>(node: t.Node, type: string): T[] {
+  const identifiers: T[] = [];
+  traverseOnly<T>(node, type, n => identifiers.push(n));
+  return identifiers;
+}
+
+traverseOnly<t.JSXElement>(ast, "JSXElement", n => {
+  const attrs = n.opening.attributes
+    .filter(isJSXAttribute)
+    .filter(isAffectedByStateUpdates)
+    .map(n => {
+      const name = n.name.type === "Identifier" ? n.name.value : n.name.name.value;
+      const value = n.value;
+      return [name, value];
+    });
+  nodes.push(Object.fromEntries(attrs));
 });
 
 function isAffectedByStateUpdates(attr: t.JSXAttribute): boolean {
-  // todo
+  const identifiers = getAll<t.Identifier>(attr, "Identifier");
+  const name = attr.name.type === "Identifier" ? attr.name.value : attr.name.name.value;
+  console.log(name, identifiers);
   return true;
 }
 
