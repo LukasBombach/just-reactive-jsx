@@ -63,7 +63,7 @@ traverseOnly<t.JSXElement>(ast, "JSXElement", n => {
 });
 
 function isAffectedByStateUpdates(attr: t.JSXAttribute): boolean {
-  const identifiers = getAll<t.Identifier>(attr.value, "Identifier");
+  const identifiers = attr.value ? getAll<t.Identifier>(attr.value, "Identifier") : [];
   const name = attr.name.type === "Identifier" ? attr.name.value : attr.name.name.value;
   console.log(name, identifiers);
   return true;
