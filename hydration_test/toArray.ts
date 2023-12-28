@@ -3,61 +3,19 @@ import { traverse } from "./traverse";
 
 import type * as t from "@swc/types";
 
-const ast = await parse(
-  `
-export function Counter() {
-  let count = 0;
-
-  return (
-    <section className="grid grid-rows-1 grid-cols-2 gap-4">
-      <input className="text-midnight px-4 py-2 rounded-md" value={count} />
-      <button onClick={() => (count = count + 1)}>count: {count}</button>
-    </section>
-  );
-}
-`,
-  { syntax: "typescript", tsx: true }
-);
-
-const nodes: object[] = [];
-
-const identifiersThatCanBeUpdatedByEventHandler: t.Identifier[] = [];
-
 function traverseNodes(node: t.Node, callback: (node: t.Node) => void) {
-  traverse(node, n => {
-    if (isPlainObject(n) && isNode(n)) {
-      callback(n);
-    }
-  });
+  traverse(node, n => isPlainObject(n) && isNode(n) && callback(n));
 }
 
-/**
- * todo the type parameter must match th ts type of the node
- */
 function traverseOnly<T>(node: t.Node, type: string, callback: (node: T) => void) {
-  traverseNodes(node, n => {
-    if (n.type === type) {
-      callback(n as T);
-    }
-  });
+  traverseNodes(node, n => n.type === type && callback(n as T));
 }
 
 function getAll<T>(node: t.Node, type: string): T[] {
   const findings: T[] = [];
-  traverseNodes(node, n => {
-    if (n.type === type) {
-      findings.push(n as T);
-    }
-  });
+  traverseNodes(node, n => n.type === type && findings.push(n as T));
   return findings;
 }
-
-traverseOnly<t.JSXElement>(ast, "JSXElement", n => {
-  const attrs = [...n.opening.attributes.filter(isJSXAttribute), ...n.children.filter(isJSXExpressionContainer)]
-    .filter(isAffectedByStateUpdates)
-    .map(toEntry);
-  nodes.push(Object.fromEntries(attrs));
-});
 
 function isAffectedByStateUpdates(n: t.JSXAttribute | t.JSXExpressionContainer): boolean {
   if (n.type === "JSXExpressionContainer") {
@@ -66,7 +24,7 @@ function isAffectedByStateUpdates(n: t.JSXAttribute | t.JSXExpressionContainer):
     return identifiers.some(canBeUpdatedByEventHander);
   } else {
     const identifiers = n.value ? getAll<t.Identifier>(n.value, "Identifier") : [];
-    const name = n.name.type === "Identifier" ? n.name.value : n.name.name.value;
+    // const name = n.name.type === "Identifier" ? n.name.value : n.name.name.value;
     // console.log(name, identifiers);
     return identifiers.some(canBeUpdatedByEventHander);
   }
@@ -111,6 +69,37 @@ function isJSXExpressionContainer(n: t.Node): n is t.JSXExpressionContainer {
 function isIdentifier(n: t.Node): n is t.Identifier {
   return n.type === "Identifier";
 }
+
+/**
+ *  --
+ */
+
+const ast = await parse(
+  `
+export function Counter() {
+  let count = 0;
+
+  return (
+    <section className="grid grid-rows-1 grid-cols-2 gap-4">
+      <input className="text-midnight px-4 py-2 rounded-md" value={count} />
+      <button onClick={() => (count = count + 1)}>count: {count}</button>
+    </section>
+  );
+}
+`,
+  { syntax: "typescript", tsx: true }
+);
+
+const nodes: object[] = [];
+
+const identifiersThatCanBeUpdatedByEventHandler: t.Identifier[] = [];
+
+traverseOnly<t.JSXElement>(ast, "JSXElement", n => {
+  const attrs = [...n.opening.attributes.filter(isJSXAttribute), ...n.children.filter(isJSXExpressionContainer)]
+    .filter(isAffectedByStateUpdates)
+    .map(toEntry);
+  nodes.push(Object.fromEntries(attrs));
+});
 
 nodes.forEach(n => {
   console.log("\n--\n");
