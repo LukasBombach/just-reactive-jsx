@@ -51,22 +51,38 @@ function getAll<T>(node: t.Node, type: string): T[] {
 }
 
 traverseOnly<t.JSXElement>(ast, "JSXElement", n => {
-  const attrs = n.opening.attributes
-    .filter(isJSXAttribute)
+  const attrs = [...n.opening.attributes.filter(isJSXAttribute), ...n.children.filter(isJSXExpressionContainer)]
     .filter(isAffectedByStateUpdates)
     .map(n => {
-      const name = n.name.type === "Identifier" ? n.name.value : n.name.name.value;
-      const value = n.value;
-      return [name, value];
+      if (n.type === "JSXExpressionContainer") {
+        const name = "children";
+        const value = n;
+        return [name, value];
+      } else {
+        const name = n.name.type === "Identifier" ? n.name.value : n.name.name.value;
+        const value = n.value;
+        return [name, value];
+      }
     });
   nodes.push(Object.fromEntries(attrs));
 });
 
-function isAffectedByStateUpdates(attr: t.JSXAttribute): boolean {
-  const identifiers = attr.value ? getAll<t.Identifier>(attr.value, "Identifier") : [];
-  const name = attr.name.type === "Identifier" ? attr.name.value : attr.name.name.value;
-  console.log(name, identifiers);
+function isAffectedByStateUpdates(n: t.JSXAttribute | t.JSXExpressionContainer): boolean {
+  if (n.type === "JSXExpressionContainer") {
+    const identifiers = getAll<t.Identifier>(n, "Identifier");
+    console.log("children", identifiers);
+  } else {
+    const identifiers = n.value ? getAll<t.Identifier>(n.value, "Identifier") : [];
+    const name = n.name.type === "Identifier" ? n.name.value : n.name.name.value;
+    console.log(name, identifiers);
+  }
   return true;
+}
+
+function toEntry(n: t.JSXAttribute | t.JSXExpressionContainer): [string, t.Expression] {
+  const name = n.name.type === "Identifier" ? n.name.value : n.name.name.value;
+  const value = n.value;
+  return [name, value];
 }
 
 function isPlainObject(n: unknown): n is object {
@@ -83,6 +99,10 @@ function isJSXElement(n: t.Node): n is t.JSXElement {
 
 function isJSXAttribute(n: t.Node): n is t.JSXAttribute {
   return n.type === "JSXAttribute";
+}
+
+function isJSXExpressionContainer(n: t.Node): n is t.JSXExpressionContainer {
+  return n.type === "JSXExpressionContainer";
 }
 
 function isIdentifier(n: t.Node): n is t.Identifier {
