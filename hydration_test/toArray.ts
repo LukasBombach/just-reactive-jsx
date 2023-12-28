@@ -21,6 +21,8 @@ export function Counter() {
 
 const nodes: object[] = [];
 
+const identifiersThatCanBeUpdatedByEventHandler: t.Identifier[] = [];
+
 function traverseNodes(node: t.Node, callback: (node: t.Node) => void) {
   traverse(node, n => {
     if (isPlainObject(n) && isNode(n)) {
@@ -53,30 +55,25 @@ function getAll<T>(node: t.Node, type: string): T[] {
 traverseOnly<t.JSXElement>(ast, "JSXElement", n => {
   const attrs = [...n.opening.attributes.filter(isJSXAttribute), ...n.children.filter(isJSXExpressionContainer)]
     .filter(isAffectedByStateUpdates)
-    .map(n => {
-      if (n.type === "JSXExpressionContainer") {
-        const name = "children";
-        const value = n;
-        return [name, value];
-      } else {
-        const name = n.name.type === "Identifier" ? n.name.value : n.name.name.value;
-        const value = n.value;
-        return [name, value];
-      }
-    });
+    .map(toEntry);
   nodes.push(Object.fromEntries(attrs));
 });
 
 function isAffectedByStateUpdates(n: t.JSXAttribute | t.JSXExpressionContainer): boolean {
   if (n.type === "JSXExpressionContainer") {
     const identifiers = getAll<t.Identifier>(n, "Identifier");
-    console.log("children", identifiers);
+    // console.log("children", identifiers);
+    return identifiers.some(canBeUpdatedByEventHander);
   } else {
     const identifiers = n.value ? getAll<t.Identifier>(n.value, "Identifier") : [];
     const name = n.name.type === "Identifier" ? n.name.value : n.name.name.value;
-    console.log(name, identifiers);
+    // console.log(name, identifiers);
+    return identifiers.some(canBeUpdatedByEventHander);
   }
-  return true;
+}
+
+function canBeUpdatedByEventHander(n: t.Identifier): boolean {
+  return identifiersThatCanBeUpdatedByEventHandler.includes(n);
 }
 
 function toEntry(n: t.JSXAttribute | t.JSXExpressionContainer): [string, t.JSXAttrValue | undefined] {
