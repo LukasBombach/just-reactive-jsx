@@ -44,7 +44,7 @@ function getAll<T>(node: t.Node, type: string): T[] {
   const findings: T[] = [];
   traverseNodes(node, n => {
     if (n.type === type) {
-      findings.push(n);
+      findings.push(n as T);
     }
   });
   return findings;
@@ -79,10 +79,16 @@ function isAffectedByStateUpdates(n: t.JSXAttribute | t.JSXExpressionContainer):
   return true;
 }
 
-function toEntry(n: t.JSXAttribute | t.JSXExpressionContainer): [string, t.Expression] {
-  const name = n.name.type === "Identifier" ? n.name.value : n.name.name.value;
-  const value = n.value;
-  return [name, value];
+function toEntry(n: t.JSXAttribute | t.JSXExpressionContainer): [string, t.JSXAttrValue | undefined] {
+  if (n.type === "JSXExpressionContainer") {
+    const name = "children";
+    const value = n;
+    return [name, value];
+  } else {
+    const name = n.name.type === "Identifier" ? n.name.value : n.name.name.value;
+    const value = n.value;
+    return [name, value];
+  }
 }
 
 function isPlainObject(n: unknown): n is object {
