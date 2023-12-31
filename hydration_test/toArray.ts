@@ -70,29 +70,63 @@ function isIdentifier(n: t.Node): n is t.Identifier {
   return n.type === "Identifier";
 }
 
+function getEventHandlers(node: t.Node): t.JSXExpression[] {
+  const eventHandlers: t.JSXExpression[] = [];
+  traverseOnly<t.JSXAttribute>(node, "JSXAttribute", n => {
+    const name = n.name.type === "Identifier" ? n.name.value : n.name.name.value;
+    if (name.match(/^on[A-Z]/) && n.value?.type === "JSXExpressionContainer") {
+      eventHandlers.push(n.value.expression);
+    }
+  });
+  return eventHandlers;
+}
+
+function isHasSpan(n: t.Node): n is t.Node & { span: t.Span } {
+  return "span" in n;
+}
+
+function assertHasSpan(n: t.Node): asserts n is t.Node & { span: t.Span } {
+  if (!isHasSpan(n)) {
+    throw new Error("assertHasSpan");
+  }
+}
+
+function bySpan(a: t.Node, b: t.Node): number {
+  assertHasSpan(a);
+  assertHasSpan(b);
+  return a.span.start - b.span.start;
+}
+
 /**
  *  --
  */
 
-const ast = await parse(
-  `
+const code = `
 export function Counter() {
   let count = 0;
 
   return (
     <section className="grid grid-rows-1 grid-cols-2 gap-4">
       <input className="text-midnight px-4 py-2 rounded-md" value={count} />
-      <button onClick={() => (count = count + 1)}>count: {count}</button>
+      <button onClick={() => { count.set(count + 1); count = count + 1; }}>count: {count}</button>
     </section>
   );
 }
-`,
-  { syntax: "typescript", tsx: true }
-);
+`;
 
 const nodes: object[] = [];
-
 const identifiersThatCanBeUpdatedByEventHandler: t.Identifier[] = [];
+
+const ast = await parse(code, { syntax: "typescript", tsx: true });
+
+console.log(
+  getEventHandlers(ast).flatMap(n => {
+    // const identifiers = getAll<t.Identifier>(n, "Identifier");
+    const callExpressions = getAll<t.CallExpression>(n, "CallExpression");
+    const assignments = getAll<t.AssignmentExpression>(n, "AssignmentExpression");
+    return [...callExpressions, ...assignments].toSorted(bySpan);
+  })
+);
 
 traverseOnly<t.JSXElement>(ast, "JSXElement", n => {
   const attrs = [...n.opening.attributes.filter(isJSXAttribute), ...n.children.filter(isJSXExpressionContainer)]
