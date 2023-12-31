@@ -86,9 +86,7 @@ function isHasSpan(n: t.Node): n is t.Node & { span: t.Span } {
 }
 
 function assertHasSpan(n: t.Node): asserts n is t.Node & { span: t.Span } {
-  if (!isHasSpan(n)) {
-    throw new Error("assertHasSpan");
-  }
+  if (!isHasSpan(n)) throw new Error("assertHasSpan");
 }
 
 function bySpan(a: t.Node, b: t.Node): number {
@@ -108,7 +106,7 @@ export function Counter() {
   return (
     <section className="grid grid-rows-1 grid-cols-2 gap-4">
       <input className="text-midnight px-4 py-2 rounded-md" value={count} />
-      <button onClick={() => { count.set(count + 1); count = count + 1; }}>count: {count}</button>
+      <button onClick={() => { count.set(count + 1); count = count + 1; count-- }}>count: {count}</button>
     </section>
   );
 }
@@ -121,10 +119,10 @@ const ast = await parse(code, { syntax: "typescript", tsx: true });
 
 console.log(
   getEventHandlers(ast).flatMap(n => {
-    // const identifiers = getAll<t.Identifier>(n, "Identifier");
     const callExpressions = getAll<t.CallExpression>(n, "CallExpression");
     const assignments = getAll<t.AssignmentExpression>(n, "AssignmentExpression");
-    return [...callExpressions, ...assignments].toSorted(bySpan);
+    const updateExpressions = getAll<t.UpdateExpression>(n, "UpdateExpression");
+    return [...callExpressions, ...assignments, ...updateExpressions].toSorted(bySpan);
   })
 );
 
