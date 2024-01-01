@@ -90,7 +90,7 @@ function getEventHandlers(node: t.Node): t.JSXExpression[] {
   return eventHandlers;
 }
 
-function getDeclaration(container: t.Node, n: t.Identifier): t.VariableDeclarator | undefined {
+function getDeclarator(container: t.Node, n: t.Identifier): t.VariableDeclarator | undefined {
   const declarators = getAll<t.VariableDeclarator>(container, "VariableDeclarator");
 
   for (const d of declarators) {
@@ -112,6 +112,15 @@ function bySpan(a: t.Node, b: t.Node): number {
   assertHasSpan(a);
   assertHasSpan(b);
   return a.span.start - b.span.start;
+}
+
+function nonEmpty<T>(v: T | undefined | null): v is T {
+  return v !== undefined && v !== null;
+}
+
+function getUsages(container: t.Node, decl: t.VariableDeclarator) {
+  const identifiers = getAll<t.Identifier>(container, "Identifier");
+  return identifiers.filter(usage => isIdentifier(decl.id) && isSameIdentifier(decl.id, usage));
 }
 
 /**
@@ -161,12 +170,14 @@ console.log(
     .flatMap(n => {
       if (isCallExpression(n)) {
         if (isMemberExpression(n.callee) && isIdentifier(n.callee.object)) {
-          return getDeclaration(ast, n.callee.object);
+          return getDeclarator(ast, n.callee.object);
         }
       } else {
         console.warn("not implemented", n.type);
       }
     })
+    .filter(nonEmpty)
+    .flatMap(n => getUsages(ast, n))
 );
 
 traverseOnly<t.JSXElement>(ast, "JSXElement", n => {
