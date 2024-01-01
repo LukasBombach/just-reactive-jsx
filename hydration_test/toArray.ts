@@ -31,7 +31,9 @@ function canBeUpdatedByEventHander(n: t.Identifier): boolean {
   return identifiersThatCanBeUpdatedByEventHandler.includes(n);
 }
 
-function toEntry(n: t.JSXAttribute | t.JSXExpressionContainer): [string, t.JSXAttrValue | undefined] {
+function toEntry(
+  n: t.JSXAttribute | t.JSXExpressionContainer
+): [string, t.JSXAttrValue | t.JSXExpressionContainer | undefined] {
   if (n.type === "JSXExpressionContainer") {
     const name = "children";
     const value = n;
@@ -159,26 +161,25 @@ const identifiersThatCanBeUpdatedByEventHandler: t.Identifier[] = [];
 
 const ast = await parse(preParsed, { syntax: "typescript", tsx: true });
 
-console.log(
-  getEventHandlers(ast)
-    .flatMap(n => {
-      const callExpressions = getAll<t.CallExpression>(n, "CallExpression");
-      const assignments = getAll<t.AssignmentExpression>(n, "AssignmentExpression");
-      const updateExpressions = getAll<t.UpdateExpression>(n, "UpdateExpression");
-      return [...callExpressions, ...assignments, ...updateExpressions].toSorted(bySpan);
-    })
-    .flatMap(n => {
-      if (isCallExpression(n)) {
-        if (isMemberExpression(n.callee) && isIdentifier(n.callee.object)) {
-          return getDeclarator(ast, n.callee.object);
-        }
-      } else {
-        console.warn("not implemented", n.type);
+getEventHandlers(ast)
+  .flatMap(n => {
+    const callExpressions = getAll<t.CallExpression>(n, "CallExpression");
+    const assignments = getAll<t.AssignmentExpression>(n, "AssignmentExpression");
+    const updateExpressions = getAll<t.UpdateExpression>(n, "UpdateExpression");
+    return [...callExpressions, ...assignments, ...updateExpressions].toSorted(bySpan);
+  })
+  .flatMap(n => {
+    if (isCallExpression(n)) {
+      if (isMemberExpression(n.callee) && isIdentifier(n.callee.object)) {
+        return getDeclarator(ast, n.callee.object);
       }
-    })
-    .filter(nonEmpty)
-    .flatMap(n => getUsages(ast, n))
-);
+    } else {
+      console.warn("not implemented", n.type);
+    }
+  })
+  .filter(nonEmpty)
+  .flatMap(n => getUsages(ast, n))
+  .forEach(n => identifiersThatCanBeUpdatedByEventHandler.push(n));
 
 traverseOnly<t.JSXElement>(ast, "JSXElement", n => {
   const attrs = [...n.opening.attributes.filter(isJSXAttribute), ...n.children.filter(isJSXExpressionContainer)]
