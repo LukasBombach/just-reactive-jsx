@@ -1,4 +1,4 @@
-import { signal, computed } from "@maverick-js/signals";
+import { signal } from "@maverick-js/signals";
 
 export function Counter() {
   const count = signal(0);

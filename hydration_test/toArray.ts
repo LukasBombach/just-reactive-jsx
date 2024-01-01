@@ -66,8 +66,22 @@ function isJSXExpressionContainer(n: t.Node): n is t.JSXExpressionContainer {
   return n.type === "JSXExpressionContainer";
 }
 
+function isCallExpression(n: t.Node): n is t.CallExpression {
+  return n.type === "CallExpression";
+}
+
+function isMemberExpression(n: t.Node): n is t.MemberExpression {
+  return n.type === "MemberExpression";
+}
+
 function isIdentifier(n: t.Node): n is t.Identifier {
   return n.type === "Identifier";
+}
+
+function isSameIdentifier(a: t.Identifier, b: t.Identifier): boolean {
+  console.log(a, b);
+
+  return a.value === b.value && a.span.ctxt === b.span.ctxt;
 }
 
 function getEventHandlers(node: t.Node): t.JSXExpression[] {
@@ -79,6 +93,16 @@ function getEventHandlers(node: t.Node): t.JSXExpression[] {
     }
   });
   return eventHandlers;
+}
+
+function getDeclaration(container: t.Node, n: t.Identifier): t.VariableDeclarator | undefined {
+  const declarators = getAll<t.VariableDeclarator>(container, "VariableDeclarator");
+
+  for (const d of declarators) {
+    if (isIdentifier(d.id) && isSameIdentifier(d.id, n)) {
+      return d;
+    }
+  }
 }
 
 function isHasSpan(n: t.Node): n is t.Node & { span: t.Span } {
@@ -112,18 +136,42 @@ export function Counter() {
 }
 `;
 
+const preParsed = `
+import { signal } from "@maverick-js/signals";
+
+export function Counter() {
+  const count = signal(0);
+
+  return (
+    <section className="xxx">
+      <input className="xxx" value={count} />
+      <button onClick={() => count.set(count() + 1)}>count: {count}</button>
+    </section>
+  );
+}`;
+
 const nodes: object[] = [];
 const identifiersThatCanBeUpdatedByEventHandler: t.Identifier[] = [];
 
-const ast = await parse(code, { syntax: "typescript", tsx: true });
+const ast = await parse(preParsed, { syntax: "typescript", tsx: true });
 
 console.log(
-  getEventHandlers(ast).flatMap(n => {
-    const callExpressions = getAll<t.CallExpression>(n, "CallExpression");
-    const assignments = getAll<t.AssignmentExpression>(n, "AssignmentExpression");
-    const updateExpressions = getAll<t.UpdateExpression>(n, "UpdateExpression");
-    return [...callExpressions, ...assignments, ...updateExpressions].toSorted(bySpan);
-  })
+  getEventHandlers(ast)
+    .flatMap(n => {
+      const callExpressions = getAll<t.CallExpression>(n, "CallExpression");
+      const assignments = getAll<t.AssignmentExpression>(n, "AssignmentExpression");
+      const updateExpressions = getAll<t.UpdateExpression>(n, "UpdateExpression");
+      return [...callExpressions, ...assignments, ...updateExpressions].toSorted(bySpan);
+    })
+    .flatMap(n => {
+      if (isCallExpression(n)) {
+        if (isMemberExpression(n.callee) && isIdentifier(n.callee.object)) {
+          return getDeclaration(ast, n.callee.object);
+        }
+      } else {
+        console.warn("not implemented", n.type);
+      }
+    })
 );
 
 traverseOnly<t.JSXElement>(ast, "JSXElement", n => {
