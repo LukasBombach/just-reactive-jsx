@@ -20,12 +20,9 @@ function getAll<T>(node: t.Node, type: string): T[] {
 function isAffectedByStateUpdates(n: t.JSXAttribute | t.JSXExpressionContainer): boolean {
   if (n.type === "JSXExpressionContainer") {
     const identifiers = getAll<t.Identifier>(n, "Identifier");
-    // console.log("children", identifiers);
     return identifiers.some(canBeUpdatedByEventHander);
   } else {
     const identifiers = n.value ? getAll<t.Identifier>(n.value, "Identifier") : [];
-    // const name = n.name.type === "Identifier" ? n.name.value : n.name.name.value;
-    // console.log(name, identifiers);
     return identifiers.some(canBeUpdatedByEventHander);
   }
 }
@@ -79,8 +76,6 @@ function isIdentifier(n: t.Node): n is t.Identifier {
 }
 
 function isSameIdentifier(a: t.Identifier, b: t.Identifier): boolean {
-  console.log(a, b);
-
   return a.value === b.value && a.span.ctxt === b.span.ctxt;
 }
 
