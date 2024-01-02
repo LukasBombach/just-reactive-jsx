@@ -11,7 +11,7 @@ function traverseOnly<T>(node: t.Node, type: string, callback: (node: T) => void
   traverseNodes(node, n => n.type === type && callback(n as T));
 }
 
-function getAll<T>(node: t.Node, type: string): T[] {
+function getAll<T extends t.Node>(node: t.Node, type: T["type"]): T[] {
   const findings: T[] = [];
   traverseNodes(node, n => n.type === type && findings.push(n as T));
   return findings;
@@ -26,6 +26,29 @@ function isAffectedByStateUpdates(n: t.JSXAttribute | t.JSXExpressionContainer):
     return identifiers.some(canBeUpdatedByEventHander);
   }
 }
+
+function findParent<T extends t.Node>(container: t.Node, child: t.Node, parentType: T["type"]): t.Node | undefined {
+  let parent: t.Node | undefined;
+  traverseOnly<T>(container, parentType, n => {
+    for (const key in n) {
+      if (n.hasOwnProperty(key)) {
+        if (Array.isArray(n[key])) {
+          (n[key] as unknown[]).forEach(c => {
+            if (c === child) {
+              parent = n;
+            }
+          });
+        } else if (n[key] === child) {
+          parent = n;
+        }
+      }
+    }
+  });
+  return parent;
+}
+
+const nodes: object[] = [];
+const identifiersThatCanBeUpdatedByEventHandler: t.Identifier[] = [];
 
 function canBeUpdatedByEventHander(n: t.Identifier): boolean {
   return identifiersThatCanBeUpdatedByEventHandler.includes(n);
@@ -148,16 +171,18 @@ import { signal } from "@maverick-js/signals";
 export function Counter() {
   const count = signal(0);
 
-  return (
+  return count % 2 == 0 ? (
     <section className="xxx">
       <input className="xxx" value={count} />
       <button onClick={() => count.set(count() + 1)}>count: {count}</button>
     </section>
+  ) : (
+    <button onClick={() => count.set(count() - 1)}>count: {count}</button>
   );
 }`;
 
-const nodes: object[] = [];
-const identifiersThatCanBeUpdatedByEventHandler: t.Identifier[] = [];
+replaceJsx(await parse(preParsed, { syntax: "typescript", tsx: true }));
+/* 
 
 const ast = await parse(preParsed, { syntax: "typescript", tsx: true });
 
@@ -191,4 +216,46 @@ traverseOnly<t.JSXElement>(ast, "JSXElement", n => {
 nodes.forEach(n => {
   console.log("\n--\n");
   console.log(n);
-});
+}); */
+
+function replaceJsx(program: t.Program): t.Program {
+  // 1. Collect all identifiers that can be mutated by event handlers
+  const mutatingIdentifiers: t.Identifier[] = [];
+
+  getEventHandlers(program)
+    .flatMap(n => {
+      const callExpressions = getAll<t.CallExpression>(n, "CallExpression");
+      const assignments = getAll<t.AssignmentExpression>(n, "AssignmentExpression");
+      const updateExpressions = getAll<t.UpdateExpression>(n, "UpdateExpression");
+      return [...callExpressions, ...assignments, ...updateExpressions].toSorted(bySpan);
+    })
+    .flatMap(n => {
+      if (isCallExpression(n)) {
+        if (isMemberExpression(n.callee) && isIdentifier(n.callee.object)) {
+          return getDeclarator(program, n.callee.object);
+        }
+      } else {
+        console.warn("not implemented", n.type);
+      }
+    })
+    .filter(nonEmpty)
+    .flatMap(n => getUsages(program, n))
+    .forEach(n => mutatingIdentifiers.push(n));
+
+  // 2. Find outmost JSX containers
+  const outmostJSXElements: t.JSXElement[] = [];
+
+  traverseOnly<t.JSXElement>(program, "JSXElement", n => {
+    const parent = findParent<t.JSXElement>(program, n, "JSXElement");
+    if (!parent) outmostJSXElements.push(n);
+  });
+
+  // 3. Continue with the rest of the code...
+
+  console.log(
+    outmostJSXElements.length,
+    outmostJSXElements.map(n => n.opening.name.value)
+  );
+
+  return program;
+}
