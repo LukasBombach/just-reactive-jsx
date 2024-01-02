@@ -136,6 +136,10 @@ function assertHasSpan(n: t.Node): asserts n is t.Node & { span: t.Span } {
   if (!isHasSpan(n)) throw new Error("assertHasSpan");
 }
 
+function assertNotNull<T>(n: T | null | undefined): asserts n is T {
+  if (n === undefined || n === null) throw new Error(`${String("")} should be defined`);
+}
+
 function bySpan(a: t.Node, b: t.Node): number {
   assertHasSpan(a);
   assertHasSpan(b);
@@ -225,17 +229,29 @@ function getHydrationCodeForJSXElement(n: t.JSXElement, mutatingIdentifiers: t.I
   const jsxElements = getAll<t.JSXElement>(n, "JSXElement");
 
   jsxElements.map(n => {
-    const attrs = [
+    const attrs: [string, t.JSXExpression][] = [
       ...n.opening.attributes.filter(isJSXAttribute),
       ...n.children.filter(isJSXExpressionContainer),
-    ].filter(n => isAffectedByStateUpdates(n, mutatingIdentifiers));
+    ]
+      .filter(n => isAffectedByStateUpdates(n, mutatingIdentifiers))
+      .flatMap(n => {
+        if (n.type === "JSXAttribute") {
+          assertNotNull(n.value);
+          if (n.value.type === "JSXExpressionContainer") {
+            const name = n.name.type === "Identifier" ? n.name.value : n.name.name.value;
+            const expression = n.value.expression;
+            return [name, expression] as const;
+          }
+        }
 
-    console.log(
-      n.opening.name.value,
-      attrs.map(n => {
-        return n.type === "JSXAttribute" ? n.name.value : "children";
-      })
-    );
+        if (n.type === "JSXExpressionContainer") {
+          return ["children", n.expression] as const;
+        }
+
+        throw new Error("unexpected");
+      });
+
+    console.log(attrs);
   });
 
   return {
