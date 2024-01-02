@@ -17,13 +17,16 @@ function getAll<T extends t.Node>(node: t.Node, type: T["type"]): T[] {
   return findings;
 }
 
-function isAffectedByStateUpdates(n: t.JSXAttribute | t.JSXExpressionContainer): boolean {
+function isAffectedByStateUpdates(
+  n: t.JSXAttribute | t.JSXExpressionContainer,
+  mutatingIdentifiers: t.Identifier[]
+): boolean {
   if (n.type === "JSXExpressionContainer") {
     const identifiers = getAll<t.Identifier>(n, "Identifier");
-    return identifiers.some(canBeUpdatedByEventHander);
+    return identifiers.some(n => mutatingIdentifiers.includes(n));
   } else {
     const identifiers = n.value ? getAll<t.Identifier>(n.value, "Identifier") : [];
-    return identifiers.some(canBeUpdatedByEventHander);
+    return identifiers.some(n => mutatingIdentifiers.includes(n));
   }
 }
 
@@ -177,7 +180,7 @@ export function Counter() {
       <button onClick={() => count.set(count() + 1)}>count: {count}</button>
     </section>
   ) : (
-    <button onClick={() => count.set(count() - 1)}>count: {count}</button>
+    <button onClick={() => count.set(count() - 1)}>decrease</button>
   );
 }`;
 
@@ -218,6 +221,46 @@ nodes.forEach(n => {
   console.log(n);
 }); */
 
+function getHydrationCodeForJSXElement(n: t.JSXElement, mutatingIdentifiers: t.Identifier[]): t.ArrayExpression {
+  const jsxElements = getAll<t.JSXElement>(n, "JSXElement");
+
+  jsxElements.map(n => {
+    const attrs = [
+      ...n.opening.attributes.filter(isJSXAttribute),
+      ...n.children.filter(isJSXExpressionContainer),
+    ].filter(n => isAffectedByStateUpdates(n, mutatingIdentifiers));
+
+    console.log(
+      n.opening.name.value,
+      attrs.map(n => {
+        return n.type === "JSXAttribute" ? n.name.value : "children";
+      })
+    );
+  });
+
+  return {
+    type: "ArrayExpression",
+    span: { start: 0, end: 0, ctxt: 0 },
+    elements: [],
+  };
+
+  /* const attrs = [...n.opening.attributes.filter(isJSXAttribute), ...n.children.filter(isJSXExpressionContainer)]
+    .filter(n => isAffectedByStateUpdates(n, mutatingIdentifiers))
+    .map(toEntry);
+  return t.arrayExpression(
+    attrs.map(([name, value]) => {
+      if (value) {
+        return t.objectExpression([
+          t.objectProperty(t.identifier("name"), t.stringLiteral(name)),
+          t.objectProperty(t.identifier("value"), value),
+        ]);
+      } else {
+        return t.objectExpression([t.objectProperty(t.identifier("name"), t.stringLiteral(name))]);
+      }
+    })
+  ); */
+}
+
 function replaceJsx(program: t.Program): t.Program {
   // 1. Collect all identifiers that can be mutated by event handlers
   const mutatingIdentifiers: t.Identifier[] = [];
@@ -251,11 +294,14 @@ function replaceJsx(program: t.Program): t.Program {
   });
 
   // 3. Continue with the rest of the code...
+  outmostJSXElements.forEach(n => {
+    const hydrationCode = getHydrationCodeForJSXElement(n, mutatingIdentifiers);
+  });
 
-  console.log(
-    outmostJSXElements.length,
-    outmostJSXElements.map(n => n.opening.name.value)
-  );
+  // console.log(
+  //   outmostJSXElements.length,
+  //   outmostJSXElements.map(n => n.opening.name.value)
+  // );
 
   return program;
 }
