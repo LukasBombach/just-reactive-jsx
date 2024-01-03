@@ -259,13 +259,18 @@ function replace(container: t.Node, child: t.Node, replacement: t.Node) {
   traverseNodes(container, n => {
     for (const key in n) {
       if (n.hasOwnProperty(key)) {
+        // @ts-expect-error todo later
         if (Array.isArray(n[key])) {
+          // @ts-expect-error todo later
           (n[key] as unknown[]).forEach((c, i) => {
             if (c === child) {
+              // @ts-expect-error todo later
               (n[key] as unknown[])[i] = replacement;
             }
           });
+          // @ts-expect-error todo later
         } else if (n[key] === child) {
+          // @ts-expect-error todo later
           n[key] = replacement;
         }
       }
