@@ -1,4 +1,4 @@
-import { parse } from "@swc/core";
+import { parse, print } from "@swc/core";
 import { traverse } from "./traverse";
 
 import type * as t from "@swc/types";
@@ -331,7 +331,7 @@ function getHydrationCodeForJSXElement(n: t.JSXElement, mutatingIdentifiers: t.I
   ); */
 }
 
-function replaceJsx(program: t.Program): t.Program {
+async function replaceJsx(program: t.Program): Promise<t.Program> {
   // 1. Collect all identifiers that can be mutated by event handlers
   const mutatingIdentifiers: t.Identifier[] = [];
 
@@ -366,7 +366,7 @@ function replaceJsx(program: t.Program): t.Program {
   // 3. Continue with the rest of the code...
   outmostJSXElements.forEach(n => {
     const hydrationCode = getHydrationCodeForJSXElement(n, mutatingIdentifiers);
-    console.log(hydrationCode);
+    replace(program, n, hydrationCode);
   });
 
   // console.log(
@@ -374,5 +374,27 @@ function replaceJsx(program: t.Program): t.Program {
   //   outmostJSXElements.map(n => n.opening.name.value)
   // );
 
+  const { code: output } = await print(program);
+
+  console.log(output);
+
   return program;
+}
+
+function replace(container: t.Node, child: t.Node, replacement: t.Node) {
+  traverseNodes(container, n => {
+    for (const key in n) {
+      if (n.hasOwnProperty(key)) {
+        if (Array.isArray(n[key])) {
+          (n[key] as unknown[]).forEach((c, i) => {
+            if (c === child) {
+              (n[key] as unknown[])[i] = replacement;
+            }
+          });
+        } else if (n[key] === child) {
+          n[key] = replacement;
+        }
+      }
+    }
+  });
 }
