@@ -3,6 +3,8 @@ import { traverse } from "./traverse";
 
 import type * as t from "@swc/types";
 
+const span = { start: 0, end: 0, ctxt: 0 };
+
 function traverseNodes(node: t.Node, callback: (node: t.Node) => void) {
   traverse(node, n => isPlainObject(n) && isNode(n) && callback(n));
 }
@@ -102,6 +104,9 @@ function isMemberExpression(n: t.Node): n is t.MemberExpression {
 function isIdentifier(n: t.Node): n is t.Identifier {
   return n.type === "Identifier";
 }
+function isExpression(n: t.Node): n is t.Expression {
+  return n.type === "Expression";
+}
 
 function isSameIdentifier(a: t.Identifier, b: t.Identifier): boolean {
   return a.value === b.value && a.span.ctxt === b.span.ctxt;
@@ -134,6 +139,17 @@ function isHasSpan(n: t.Node): n is t.Node & { span: t.Span } {
 
 function assertHasSpan(n: t.Node): asserts n is t.Node & { span: t.Span } {
   if (!isHasSpan(n)) throw new Error("assertHasSpan");
+}
+
+function assertJSXExpressionContainer(n: t.Node): asserts n is t.JSXExpressionContainer {
+  if (n.type !== "JSXExpressionContainer") throw new Error("Node should have type JSXExpressionContainer");
+}
+
+function assertIdentifier(n: t.Node): asserts n is t.Identifier {
+  if (n.type !== "Identifier") throw new Error("Node should have type Identifier");
+}
+function assertExpression(n: t.Node): asserts n is t.Expression {
+  if (n.type !== "Expression") throw new Error("Node should have type Expression");
 }
 
 function assertNotNull<T>(n: T | null | undefined): asserts n is T {
@@ -225,16 +241,49 @@ nodes.forEach(n => {
   console.log(n);
 }); */
 
+function toHydrationEntry(attrs: t.JSXAttribute[]): t.ObjectExpression {
+  return {
+    type: "ObjectExpression",
+    span,
+    properties: attrs.map(n => {
+      assertIdentifier(n.name);
+      assertNotNull(n.value);
+      assertJSXExpressionContainer(n.value);
+      return { type: "KeyValueProperty", key: n.name, value: n.value.expression };
+    }),
+  };
+}
+
+function toChildrenJSXAttribute(values: t.JSXExpressionContainer[]): t.JSXAttribute {
+  return {
+    type: "JSXAttribute",
+    span,
+    name: { type: "Identifier", span, value: "children", optional: false },
+    value: {
+      type: "JSXExpressionContainer",
+      span,
+      expression: {
+        type: "ArrayExpression",
+        span,
+        elements: values
+          .map(n => n.expression)
+          .filter(isExpression)
+          .map(expression => ({ expression })),
+      },
+    },
+  };
+}
+
 function getHydrationCodeForJSXElement(n: t.JSXElement, mutatingIdentifiers: t.Identifier[]): t.ArrayExpression {
   const jsxElements = getAll<t.JSXElement>(n, "JSXElement");
 
-  jsxElements.map(n => {
+  /* jsxElements.map(n => {
     const attrs: [string, t.JSXExpression][] = [
       ...n.opening.attributes.filter(isJSXAttribute),
-      ...n.children.filter(isJSXExpressionContainer),
+      toChildrenJSXAttribute(n.children.filter(isJSXExpressionContainer)),
     ]
       .filter(n => isAffectedByStateUpdates(n, mutatingIdentifiers))
-      .flatMap(n => {
+      .flatMap<[string, t.JSXExpression]>(n => {
         if (n.type === "JSXAttribute") {
           assertNotNull(n.value);
           if (n.value.type === "JSXExpressionContainer") {
@@ -244,20 +293,25 @@ function getHydrationCodeForJSXElement(n: t.JSXElement, mutatingIdentifiers: t.I
           }
         }
 
-        if (n.type === "JSXExpressionContainer") {
-          return ["children", n.expression] as const;
-        }
-
         throw new Error("unexpected");
       });
 
     console.log(attrs);
-  });
+  }); */
 
   return {
     type: "ArrayExpression",
     span: { start: 0, end: 0, ctxt: 0 },
-    elements: [],
+    elements: jsxElements
+      .map(n => {
+        return [
+          ...n.opening.attributes.filter(isJSXAttribute),
+          toChildrenJSXAttribute(n.children.filter(isJSXExpressionContainer)),
+        ].filter(n => isAffectedByStateUpdates(n, mutatingIdentifiers));
+      })
+      .filter(attrs => attrs.length > 0)
+      .map(toHydrationEntry)
+      .map(n => ({ expression: n })),
   };
 
   /* const attrs = [...n.opening.attributes.filter(isJSXAttribute), ...n.children.filter(isJSXExpressionContainer)]
@@ -312,6 +366,7 @@ function replaceJsx(program: t.Program): t.Program {
   // 3. Continue with the rest of the code...
   outmostJSXElements.forEach(n => {
     const hydrationCode = getHydrationCodeForJSXElement(n, mutatingIdentifiers);
+    console.log(hydrationCode);
   });
 
   // console.log(
