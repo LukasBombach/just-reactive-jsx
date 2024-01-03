@@ -156,7 +156,7 @@ export function Counter() {
   return (
     <section className="xxx">
       <input className="xxx" value={count} />
-      <button onClick={() => count.set(count() + 1)}>count: {count}</button>
+      <button onClick={() => count.set(count() + 1)}>count: {count}}</button>
     </section>
   );
 }`;
@@ -187,10 +187,7 @@ function toChildrenJSXAttribute(values: t.JSXExpressionContainer[]): t.JSXAttrib
       expression: {
         type: "ArrayExpression",
         span,
-        elements: values
-          .map(n => n.expression)
-          .filter(isExpression)
-          .map(expression => ({ expression })),
+        elements: values.map(n => ({ expression: n.expression })),
       },
     },
   };
