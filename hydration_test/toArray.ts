@@ -52,27 +52,6 @@ function findParent<T extends t.Node>(container: t.Node, child: t.Node, parentTy
   return parent;
 }
 
-const nodes: object[] = [];
-const identifiersThatCanBeUpdatedByEventHandler: t.Identifier[] = [];
-
-function canBeUpdatedByEventHander(n: t.Identifier): boolean {
-  return identifiersThatCanBeUpdatedByEventHandler.includes(n);
-}
-
-function toEntry(
-  n: t.JSXAttribute | t.JSXExpressionContainer
-): [string, t.JSXAttrValue | t.JSXExpressionContainer | undefined] {
-  if (n.type === "JSXExpressionContainer") {
-    const name = "children";
-    const value = n;
-    return [name, value];
-  } else {
-    const name = n.name.type === "Identifier" ? n.name.value : n.name.name.value;
-    const value = n.value;
-    return [name, value];
-  }
-}
-
 function isPlainObject(n: unknown): n is object {
   return typeof n === "object" && n !== null && !Array.isArray(n);
 }
@@ -148,9 +127,6 @@ function assertJSXExpressionContainer(n: t.Node): asserts n is t.JSXExpressionCo
 function assertIdentifier(n: t.Node): asserts n is t.Identifier {
   if (n.type !== "Identifier") throw new Error("Node should have type Identifier");
 }
-function assertExpression(n: t.Node): asserts n is t.Expression {
-  if (n.type !== "Expression") throw new Error("Node should have type Expression");
-}
 
 function assertNotNull<T>(n: T | null | undefined): asserts n is T {
   if (n === undefined || n === null) throw new Error(`${String("")} should be defined`);
@@ -171,75 +147,21 @@ function getUsages(container: t.Node, decl: t.VariableDeclarator) {
   return identifiers.filter(usage => isIdentifier(decl.id) && isSameIdentifier(decl.id, usage));
 }
 
-/**
- *  --
- */
-
-const code = `
-export function Counter() {
-  let count = 0;
-
-  return (
-    <section className="grid grid-rows-1 grid-cols-2 gap-4">
-      <input className="text-midnight px-4 py-2 rounded-md" value={count} />
-      <button onClick={() => { count.set(count + 1); count = count + 1; count-- }}>count: {count}</button>
-    </section>
-  );
-}
-`;
-
 const preParsed = `
 import { signal } from "@maverick-js/signals";
 
 export function Counter() {
   const count = signal(0);
 
-  return count % 2 == 0 ? (
+  return (
     <section className="xxx">
       <input className="xxx" value={count} />
       <button onClick={() => count.set(count() + 1)}>count: {count}</button>
     </section>
-  ) : (
-    <button onClick={() => count.set(count() - 1)}>decrease</button>
   );
 }`;
 
 replaceJsx(await parse(preParsed, { syntax: "typescript", tsx: true }));
-/* 
-
-const ast = await parse(preParsed, { syntax: "typescript", tsx: true });
-
-getEventHandlers(ast)
-  .flatMap(n => {
-    const callExpressions = getAll<t.CallExpression>(n, "CallExpression");
-    const assignments = getAll<t.AssignmentExpression>(n, "AssignmentExpression");
-    const updateExpressions = getAll<t.UpdateExpression>(n, "UpdateExpression");
-    return [...callExpressions, ...assignments, ...updateExpressions].toSorted(bySpan);
-  })
-  .flatMap(n => {
-    if (isCallExpression(n)) {
-      if (isMemberExpression(n.callee) && isIdentifier(n.callee.object)) {
-        return getDeclarator(ast, n.callee.object);
-      }
-    } else {
-      console.warn("not implemented", n.type);
-    }
-  })
-  .filter(nonEmpty)
-  .flatMap(n => getUsages(ast, n))
-  .forEach(n => identifiersThatCanBeUpdatedByEventHandler.push(n));
-
-traverseOnly<t.JSXElement>(ast, "JSXElement", n => {
-  const attrs = [...n.opening.attributes.filter(isJSXAttribute), ...n.children.filter(isJSXExpressionContainer)]
-    .filter(isAffectedByStateUpdates)
-    .map(toEntry);
-  nodes.push(Object.fromEntries(attrs));
-});
-
-nodes.forEach(n => {
-  console.log("\n--\n");
-  console.log(n);
-}); */
 
 function toHydrationEntry(attrs: t.JSXAttribute[]): t.ObjectExpression {
   return {
@@ -277,28 +199,6 @@ function toChildrenJSXAttribute(values: t.JSXExpressionContainer[]): t.JSXAttrib
 function getHydrationCodeForJSXElement(n: t.JSXElement, mutatingIdentifiers: t.Identifier[]): t.ArrayExpression {
   const jsxElements = getAll<t.JSXElement>(n, "JSXElement");
 
-  /* jsxElements.map(n => {
-    const attrs: [string, t.JSXExpression][] = [
-      ...n.opening.attributes.filter(isJSXAttribute),
-      toChildrenJSXAttribute(n.children.filter(isJSXExpressionContainer)),
-    ]
-      .filter(n => isAffectedByStateUpdates(n, mutatingIdentifiers))
-      .flatMap<[string, t.JSXExpression]>(n => {
-        if (n.type === "JSXAttribute") {
-          assertNotNull(n.value);
-          if (n.value.type === "JSXExpressionContainer") {
-            const name = n.name.type === "Identifier" ? n.name.value : n.name.name.value;
-            const expression = n.value.expression;
-            return [name, expression] as const;
-          }
-        }
-
-        throw new Error("unexpected");
-      });
-
-    console.log(attrs);
-  }); */
-
   return {
     type: "ArrayExpression",
     span: { start: 0, end: 0, ctxt: 0 },
@@ -313,22 +213,6 @@ function getHydrationCodeForJSXElement(n: t.JSXElement, mutatingIdentifiers: t.I
       .map(toHydrationEntry)
       .map(n => ({ expression: n })),
   };
-
-  /* const attrs = [...n.opening.attributes.filter(isJSXAttribute), ...n.children.filter(isJSXExpressionContainer)]
-    .filter(n => isAffectedByStateUpdates(n, mutatingIdentifiers))
-    .map(toEntry);
-  return t.arrayExpression(
-    attrs.map(([name, value]) => {
-      if (value) {
-        return t.objectExpression([
-          t.objectProperty(t.identifier("name"), t.stringLiteral(name)),
-          t.objectProperty(t.identifier("value"), value),
-        ]);
-      } else {
-        return t.objectExpression([t.objectProperty(t.identifier("name"), t.stringLiteral(name))]);
-      }
-    })
-  ); */
 }
 
 async function replaceJsx(program: t.Program): Promise<t.Program> {
@@ -363,19 +247,12 @@ async function replaceJsx(program: t.Program): Promise<t.Program> {
     if (!parent) outmostJSXElements.push(n);
   });
 
-  // 3. Continue with the rest of the code...
+  // 3. Replace outmost JSX containers with hydration code
   outmostJSXElements.forEach(n => {
-    const hydrationCode = getHydrationCodeForJSXElement(n, mutatingIdentifiers);
-    replace(program, n, hydrationCode);
+    replace(program, n, getHydrationCodeForJSXElement(n, mutatingIdentifiers));
   });
 
-  // console.log(
-  //   outmostJSXElements.length,
-  //   outmostJSXElements.map(n => n.opening.name.value)
-  // );
-
   const { code: output } = await print(program);
-
   console.log(output);
 
   return program;
