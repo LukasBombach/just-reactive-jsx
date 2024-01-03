@@ -1,5 +1,6 @@
 import { signal } from "@maverick-js/signals";
 import { valueFromSsr } from "./hydrate";
+
 import type { HydrationFn } from "./hydrate";
 
 export const Counter: HydrationFn<[number]> = () => {
