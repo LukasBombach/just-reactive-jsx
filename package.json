@@ -24,7 +24,7 @@
     "zod": "3.22.4"
   },
   "scripts": {
-    "dev": "bun cli/index.ts dev",
+    "dev": "bun --hot cli/index.ts dev",
     "hydration_test": "bun --watch hydration_test/server.ts"
   },
   "type": "module"
