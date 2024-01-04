@@ -1,11 +1,14 @@
+import { getHtmlResponse } from "../renderer/getHtmlResponse";
+
 export async function startDevServer() {
   Bun.serve({
     port: 3000,
     development: true,
     async fetch(req: Request) {
-      const file = Bun.file("app/index.tsx");
-      const text = await file.text();
-      return new Response(text);
+      const html = await getHtmlResponse("app/index.tsx");
+      return new Response(html, {
+        headers: { "content-type": "text/html; charset=utf-8" },
+      });
     },
   });
 

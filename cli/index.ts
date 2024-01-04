@@ -15,7 +15,7 @@ function parseArgs(args: string[]) {
   }
 }
 
-const args = parseArgs(process.argv);
+const args = parseArgs(Bun.argv);
 
 if (args.command === "dev") {
   startDevServer();
