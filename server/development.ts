@@ -3,7 +3,9 @@ export async function startDevServer() {
     port: 3000,
     development: true,
     async fetch(req: Request) {
-      return new Response(`Hello world`);
+      const file = Bun.file("app/index.tsx");
+      const text = await file.text();
+      return new Response(text);
     },
   });
 
