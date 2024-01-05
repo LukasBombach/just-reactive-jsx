@@ -3,6 +3,7 @@ import { Elysia } from "elysia";
 import { html } from "server/contenttype";
 import { log } from "server/log";
 import { compileServerBundle, render } from "renderer/ssr";
+import { compileClientBundle } from "renderer/client";
 
 export async function startDevServer() {
   new Elysia()
@@ -11,6 +12,8 @@ export async function startDevServer() {
       log.blue("ready", "http://localhost:3000", "\n");
       await compileServerBundle("index");
       log.green("compiled", "server/index");
+      await compileClientBundle("index");
+      log.green("compiled", "client/index");
     })
     .onResponse(({ path }) => log.blue(200, path))
     .get("/", () => render("index"))
@@ -21,4 +24,6 @@ export async function startDevServer() {
 watch("app", { recursive: true }, async () => {
   await compileServerBundle("index");
   log.green("compiled", "server/index");
+  await compileClientBundle("index");
+  log.green("compiled", "client/index");
 });
