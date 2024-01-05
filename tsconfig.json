@@ -14,11 +14,12 @@
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
     "allowJs": true,
-    "baseUrl": ".",
-    "types": [
-      "bun-types" // add Bun global
-    ],
     "jsx": "react-jsx",
-    "jsxImportSource": "src/runtime"
+    "jsxImportSource": "src/runtime",
+    "baseUrl": ".",
+    "paths": {
+      "server/*": ["server/*"],
+      "renderer/*": ["renderer/*"]
+    }
   }
 }

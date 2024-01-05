@@ -1,5 +1,5 @@
 import { Elysia } from "elysia";
-import { html } from "@elysiajs/html";
+import { html } from "server/html";
 import { log } from "server/log";
 import { compileServerBundle, render } from "renderer/ssr";
 
