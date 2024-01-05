@@ -161,7 +161,7 @@ export function Counter() {
   );
 }`;
 
-replaceJsx(await parse(preParsed, { syntax: "typescript", tsx: true }));
+// replaceJsx(await parse(preParsed, { syntax: "typescript", tsx: true }));
 
 function toHydrationEntry(attrs: t.JSXAttribute[]): t.ObjectExpression {
   return {
@@ -249,8 +249,8 @@ export async function replaceJsx(program: t.Program): Promise<t.Program> {
     replace(program, n, getHydrationCodeForJSXElement(n, mutatingIdentifiers));
   });
 
-  const { code: output } = await print(program);
-  console.log(output);
+  // const { code: output } = await print(program);
+  // console.log(output);
 
   return program;
 }
