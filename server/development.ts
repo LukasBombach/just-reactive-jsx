@@ -1,7 +1,7 @@
 import { Elysia } from "elysia";
 import { html } from "@elysiajs/html";
-import { compileServerBundle, render } from "renderer/ssr";
 import { log } from "server/log";
+import { compileServerBundle, render } from "renderer/ssr";
 
 export async function startDevServer() {
   new Elysia()
