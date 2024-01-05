@@ -1,9 +1,19 @@
 import { renderToString } from "../src/server/renderToString";
 
-export async function getHtml(path: string): Promise<string> {
-  const { outputs, logs } = await Bun.build({ entrypoints: [path], outdir: "build" });
-  const { default: Page } = await import(outputs[0].path);
+function app(path: string) {
+  return "app/" + path;
+}
+
+function dist(path: string) {
+  return "build/" + path;
+}
+
+export async function compileServerBundle(path: string): Promise<void> {
+  const { logs } = await Bun.build({ entrypoints: [app(path)], outdir: "build" });
   logs.forEach(log => console.warn(log));
-  // console.log(Page());
+}
+
+export async function render(path: string): Promise<string> {
+  const { default: Page } = await import(dist(path));
   return renderToString(Page());
 }
