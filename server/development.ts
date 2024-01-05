@@ -1,5 +1,5 @@
 import { Elysia } from "elysia";
-import { html } from "server/html";
+import { html } from "server/contenttype";
 import { log } from "server/log";
 import { compileServerBundle, render } from "renderer/ssr";
 
@@ -8,10 +8,10 @@ export async function startDevServer() {
     .use(html())
     .onStart(async () => {
       log.blue("ready", "http://localhost:3000", "\n");
-      await compileServerBundle("index.tsx");
-      log.green("compiled", "index.tsx");
+      await compileServerBundle("index");
+      log.green("compiled", "index");
     })
     .onResponse(({ path }) => log.blue(200, path))
-    .get("/", () => render("index.js"))
+    .get("/", () => render("index"))
     .listen(3000);
 }
