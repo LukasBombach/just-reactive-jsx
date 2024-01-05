@@ -24,9 +24,14 @@ export async function startDevServer() {
     .listen(3000);
 }
 
-watch("app", { recursive: true }, async () => {
+const watcher = watch("app", { recursive: true }, async () => {
   await compileServerBundle("index");
   log.green("compiled", "server/index");
   await compileClientBundle("index");
   log.green("compiled", "client/index");
+});
+
+process.on("SIGINT", () => {
+  watcher.close();
+  process.exit(0);
 });
