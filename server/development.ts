@@ -6,10 +6,8 @@ import { log } from "server/log";
 export async function startDevServer() {
   new Elysia()
     .use(html())
-    .onStart(() => {
-      log.blue("ready", "http://localhost:3000", "\n");
-    })
     .onStart(async () => {
+      log.blue("ready", "http://localhost:3000", "\n");
       await compileServerBundle("index.tsx");
       log.green("compiled", "index.tsx");
     })
