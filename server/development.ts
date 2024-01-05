@@ -1,17 +1,19 @@
-import c from "chalk";
 import { Elysia } from "elysia";
 import { html } from "@elysiajs/html";
 import { compileServerBundle, render } from "renderer/ssr";
+import { log } from "server/log";
 
 export async function startDevServer() {
   new Elysia()
     .use(html())
-    .onStart(async () => {
-      console.log(" -", c.blue("ready"), "http://localhost:3000\n");
-      await compileServerBundle("index.tsx");
-      console.log(" -", c.green("compiled"), "index.tsx");
+    .onStart(() => {
+      log.blue("ready", "http://localhost:3000", "\n");
     })
-    .onResponse(({ path }) => console.log(" -", `${c.blue(200)}`.padEnd(8, " "), path))
+    .onStart(async () => {
+      await compileServerBundle("index.tsx");
+      log.green("compiled", "index.tsx");
+    })
+    .onResponse(({ path }) => log.blue(200, path))
     .get("/", () => render("index.js"))
     .listen(3000);
 }
