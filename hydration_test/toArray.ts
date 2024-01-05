@@ -212,7 +212,7 @@ function getHydrationCodeForJSXElement(n: t.JSXElement, mutatingIdentifiers: t.I
   };
 }
 
-async function replaceJsx(program: t.Program): Promise<t.Program> {
+export async function replaceJsx(program: t.Program): Promise<t.Program> {
   // 1. Collect all identifiers that can be mutated by event handlers
   const mutatingIdentifiers: t.Identifier[] = [];
 

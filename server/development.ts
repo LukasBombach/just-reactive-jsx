@@ -5,6 +5,9 @@ import { log } from "server/log";
 import { compileServerBundle, render } from "renderer/ssr";
 import { compileClientBundle } from "renderer/client";
 
+// Note to self: Virutal Modules
+// https://bun.sh/docs/runtime/plugins#virtual-modules
+
 export async function startDevServer() {
   new Elysia()
     .use(html())
