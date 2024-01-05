@@ -13,5 +13,6 @@ export async function startDevServer() {
     })
     .onResponse(({ path }) => log.blue(200, path))
     .get("/", () => render("index"))
+    .get("/index.js", () => Bun.file("build/client/index.js"))
     .listen(3000);
 }

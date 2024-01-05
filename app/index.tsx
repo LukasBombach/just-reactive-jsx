@@ -17,6 +17,7 @@ export default function Page() {
           <input value={count} />
           <button onClick={() => count++}>increase</button>
         </section>
+        <script src="index.js" />
       </body>
     </html>
   );

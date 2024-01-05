@@ -34,7 +34,7 @@ export function renderToString(node: ReactNode | (() => ReactNode)): string {
 
       for (let [key, val] of Object.entries(node.props)) {
         if (key.match(/^on[A-Z]/)) {
-          attrs.push(`${key}="--omit--"`);
+          // attrs.push(`${key}="--omit--"`);
           continue;
         }
 
@@ -56,7 +56,10 @@ export function renderToString(node: ReactNode | (() => ReactNode)): string {
 
       if (node.props.children) {
         return `${docType}<${[node.type, ...attrs].join(" ")}>${children.join("")}</${node.type}>`;
-      } else {
+      } else if (node.type === "script") {
+        return `${docType}<${[node.type, ...attrs].join(" ")}></${node.type}>`;
+      }
+      {
         return `${docType}<${[node.type, ...attrs].join(" ")} />`;
       }
     }
