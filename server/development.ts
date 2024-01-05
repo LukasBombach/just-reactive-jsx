@@ -7,11 +7,11 @@ export async function startDevServer() {
   new Elysia()
     .use(html())
     .onStart(async () => {
-      console.log("\n 🚀 http://localhost:3000\n");
+      console.log(" -", c.blue("ready"), "http://localhost:3000\n");
       await compileServerBundle("index.tsx");
-      console.log(" - ", c.green("compiled"), "index.tsx");
+      console.log(" -", c.green("compiled"), "index.tsx");
     })
-    .onResponse(({ path }) => console.log(" - ", c.blue(200), path))
+    .onResponse(({ path }) => console.log(" -", `${c.blue(200)}`.padEnd(8, " "), path))
     .get("/", () => render("index.js"))
     .listen(3000);
 }
