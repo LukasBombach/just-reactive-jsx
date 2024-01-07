@@ -16,7 +16,7 @@ export async function startDevServer() {
     .use(html())
 
     // Start server
-    .onStart(async () => {
+    .onStart(() => {
       log.blue("ready", "http://localhost:3000", "\n");
     })
 
