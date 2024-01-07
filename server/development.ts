@@ -1,6 +1,3 @@
-// Note to self: Virutal Modules
-// https://bun.sh/docs/runtime/plugins#virtual-modules
-
 import { watch } from "fs";
 import { Elysia } from "elysia";
 import { html } from "server/contenttype";
@@ -8,6 +5,10 @@ import { log } from "server/log";
 import { compileServerBundle, render } from "renderer/ssr";
 import { compileClientBundle } from "renderer/client";
 
+/**
+ * Note to self: Virutal Modules
+ * https://bun.sh/docs/runtime/plugins#virtual-modules
+ */
 export async function startDevServer() {
   new Elysia()
 
@@ -17,12 +18,16 @@ export async function startDevServer() {
     // Start server
     .onStart(async () => {
       log.blue("ready", "http://localhost:3000", "\n");
+    })
 
-      // Server bundle (todo: with watch mode)
+    // Server bundle (todo: with watch mode)
+    .onStart(async () => {
       await compileServerBundle("index");
       log.green("compiled", "server/index");
+    })
 
-      // Client bundle (todo: with watch mode)
+    // Client bundle (todo: with watch mode)
+    .onStart(async () => {
       await compileClientBundle("index");
       log.green("compiled", "client/index");
     })
