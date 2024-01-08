@@ -1,5 +1,13 @@
 # just-reactive-jsx
 
+Current todos
+
+- [ ] Plugin: Assignments -> Signals
+- [ ] SSR: Hydration Markers
+- [ ] Client JS: Hydration functions
+- [ ] Client JS: Final bundle + hydration data
+- [ ] Cleanup
+
 Next steps
 
 - [ ] Clean up
