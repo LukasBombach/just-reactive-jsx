@@ -1,4 +1,7 @@
 import { parse, print } from "@swc/core";
+import { findEventHandlers } from "ast/jsx";
+import { unique } from "ast/filter";
+import * as to from "ast/map";
 
 /**
  * todo maybe use recast
@@ -7,7 +10,10 @@ import { parse, print } from "@swc/core";
 export async function transformReactiveCode(input: string): Promise<string> {
   const program = await parse(input, { syntax: "typescript", tsx: true });
 
-  const variables = findEventHandlers(program).flatMap(findIndentifiers).flatMap(findDeclarators);
+  const variables = findEventHandlers(program)
+    .flatMap(to.Indentifiers)
+    .flatMap(to.Declarators /* todo, declaratos must be found in program, maybe: to.Declarators.in(program) */)
+    .filter(unique);
   const usages = variables.flatMap(findUsages);
   const assignments = variables.flatMap(findAssignments);
 
