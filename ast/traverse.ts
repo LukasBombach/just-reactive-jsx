@@ -4,7 +4,7 @@ import type * as t from "@swc/types";
 import type { AnyNode, NodeType } from "./types";
 
 export function traverse(parent: t.Node, callback: (node: t.Node) => void) {
-  traverseAny(parent, n => is.PlainObject(n) && is.Node(n) && callback(n));
+  traverseAny(parent, n => is.Node(n) && callback(n));
 }
 
 export function traverseByType<T extends NodeType>(

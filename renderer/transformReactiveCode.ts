@@ -12,7 +12,7 @@ export async function transformReactiveCode(input: string): Promise<string> {
 
   const variables = findEventHandlers(program)
     .flatMap(to.Indentifiers)
-    .flatMap(to.Declarators /* todo, declaratos must be found in program, maybe: to.Declarators.in(program) */)
+    .flatMap(to.Declarators.bind(program))
     .filter(unique);
   const usages = variables.flatMap(findUsages);
   const assignments = variables.flatMap(findAssignments);

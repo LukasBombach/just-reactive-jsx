@@ -22,8 +22,8 @@ export function PlainObject(n: unknown): n is object {
   return typeof n === "object" && n !== null && !Array.isArray(n);
 }
 
-export function Node(o: object): o is t.Node {
-  return "type" in o;
+export function Node(v: unknown): v is t.Node {
+  return PlainObject(v) && "type" in v;
 }
 
 export function JSXElement(n: Nullable<t.Node>): n is t.JSXElement {
