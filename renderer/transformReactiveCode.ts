@@ -14,6 +14,7 @@ export async function transformReactiveCode(input: string): Promise<string> {
     .flatMap(to.Indentifiers)
     .flatMap(to.Declarators.bind(program))
     .filter(unique);
+
   const usages = variables.flatMap(findUsages);
   const assignments = variables.flatMap(findAssignments);
 
