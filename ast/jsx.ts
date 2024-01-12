@@ -1,10 +1,10 @@
-import { findAllByType } from "./find";
+import { findAll } from "./find";
 import * as is from "./types";
 
 import type * as t from "@swc/types";
 
 export function findEventHandlers(parent: t.Node): t.JSXExpression[] {
-  return findAllByType(parent, "JSXAttribute")
+  return findAll(parent, "JSXAttribute")
     .filter(isEventHandler)
     .map(n => n.value)
     .filter(is.JSXExpressionContainer)

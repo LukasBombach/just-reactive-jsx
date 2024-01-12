@@ -1,11 +1,11 @@
-import { findAllByType } from "./find";
+import { findAll } from "./find";
 import * as asserts from "./assert";
 import * as is from "./types";
 
 import type * as t from "@swc/types";
 
 export function toDeclarators(program: t.Program): (n: t.Identifier) => t.VariableDeclarator {
-  const declarators = findAllByType(program, "VariableDeclarator");
+  const declarators = findAll(program, "VariableDeclarator");
 
   for (const d of declarators) if (isSameIdentifier(d.id, n)) return d;
 

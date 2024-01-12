@@ -15,12 +15,12 @@ export async function transformReactiveCode(input: string): Promise<string> {
     .flatMap(to.Declarators.bind(program))
     .filter(unique);
 
-  const usages = variables.flatMap(findUsages);
-  const assignments = variables.flatMap(findAssignments);
+  const usages = variables.flatMap(to.Reads.bind(program));
+  const updates = variables.flatMap(to.Updates.bind(program));
 
   variables.forEach(replaceWithSignal);
   usages.forEach(replaceWithGetters);
-  assignments.forEach(replaceWithSetters);
+  updates.forEach(replaceWithSetters);
 
   return await print(program).then(o => o.code);
 }
