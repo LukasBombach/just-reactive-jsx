@@ -1,6 +1,6 @@
-import { findAll } from "./find";
-import * as asserts from "./assert";
-import * as is from "./types";
+import { findAll } from "ast/find";
+import * as asserts from "ast/assert";
+import * as is from "ast/types";
 
 import type * as t from "@swc/types";
 
@@ -23,11 +23,27 @@ export function Usages(this: unknown, n: t.VariableDeclarator): t.Identifier[] {
 }
 
 export function Reads(this: unknown, n: t.VariableDeclarator): t.Identifier[] {
+  asserts.Node(this);
   const usages = Usages.bind(this)(n);
+  const assignments = findAll(this, "AssignmentExpression");
+  const updateExpressions = findAll(this, "UpdateExpression");
+  return usages.filter(u => {
+    for (const a of assignments) if (isSameIdentifier(a.left, u)) return false;
+    for (const u of updateExpressions) if (isSameIdentifier(u.argument, u)) return false;
+    return true;
+  });
 }
 
 export function Updates(this: unknown, n: t.VariableDeclarator): t.Identifier[] {
+  asserts.Node(this);
   const usages = Usages.bind(this)(n);
+  const assignments = findAll(this, "AssignmentExpression");
+  const updateExpressions = findAll(this, "UpdateExpression");
+  return usages.filter(u => {
+    for (const a of assignments) if (isSameIdentifier(a.left, u)) return true;
+    for (const u of updateExpressions) if (isSameIdentifier(u.argument, u)) return true;
+    return false;
+  });
 }
 
 function isSameIdentifier(a: t.Node, b: t.Node): boolean {

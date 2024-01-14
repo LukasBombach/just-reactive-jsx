@@ -34,3 +34,5 @@ function traverseAny(obj: any, callback: (node: any) => void) {
     }
   }
 }
+
+export function parent(program: t.Program, child: t.Node): t.Node {}
