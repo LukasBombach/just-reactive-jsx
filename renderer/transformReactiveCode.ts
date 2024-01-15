@@ -1,5 +1,6 @@
 import { parse, print } from "@swc/core";
 import { findEventHandlers } from "ast/jsx";
+import { replace } from "ast/replace";
 import { unique } from "ast/filter";
 import * as asserts from "ast/assert";
 import * as to from "ast/map";
@@ -39,12 +40,14 @@ function replaceWithSignal(n: t.VariableDeclarator) {
   };
 }
 
-function replaceWithGetters(n: t.Identifier) {
-  replaceWithGetters(n);
-
-  n.type = "CallExpression";
-  n.callee = { type: "Identifier", value: "get", span: { start: 0, end: 0, ctxt: n.span.ctxt }, optional: false };
-  n.arguments = [{ expression: n }];
+function replaceWithGetters(this: unknown, n: t.Identifier) {
+  asserts.Node(this);
+  replace(this, n, {
+    type: "CallExpression",
+    callee: { type: "Identifier", value: n.value, span: { start: 0, end: 0, ctxt: n.span.ctxt }, optional: false },
+    arguments: [],
+    span: { start: 0, end: 0, ctxt: n.span.ctxt },
+  } as t.CallExpression);
 }
 
 function injectImportToMaverick(program: t.Module) {
