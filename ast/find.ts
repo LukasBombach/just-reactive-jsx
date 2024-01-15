@@ -8,3 +8,5 @@ export function findAll<T extends NodeType>(parent: t.Node, type: T): Extract<An
   traverseByType(parent, type, n => findings.push(n as Extract<AnyNode, { type: T }>));
   return findings;
 }
+
+export function findParent

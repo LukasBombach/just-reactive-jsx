@@ -50,6 +50,47 @@ function replaceWithGetters(this: unknown, n: t.Identifier) {
   } as t.CallExpression);
 }
 
+function replaceWithSetters(this: unknown, n: t.Identifier) {
+  asserts.Node(this);
+  replace(this, n, {
+    type: "CallExpression",
+    span: {
+      start: 0,
+      end: 0,
+      ctxt: n.span.ctxt,
+    },
+    callee: {
+      type: "MemberExpression",
+      span: {
+        start: 0,
+        end: 0,
+        ctxt: n.span.ctxt,
+      },
+      object: {
+        type: "Identifier",
+        span: {
+          start: 0,
+          end: 0,
+          ctxt: n.span.ctxt,
+        },
+        value: n.value,
+        optional: false,
+      },
+      property: {
+        type: "Identifier",
+        span: {
+          start: 0,
+          end: 0,
+          ctxt: n.span.ctxt,
+        },
+        value: "set",
+        optional: false,
+      },
+    },
+    arguments: [],
+  } as t.CallExpression);
+}
+
 function injectImportToMaverick(program: t.Module) {
   program.body.unshift({
     type: "ImportDeclaration",
