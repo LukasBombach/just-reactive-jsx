@@ -25,8 +25,6 @@ export async function transformReactiveCode(input: string): Promise<string> {
 
   injectImportToMaverick(program);
 
-  console.log(reads.length);
-
   declarators.forEach(replaceWithSignal);
   reads.forEach(replaceWithGetters.bind(program));
   updates.forEach(replaceWithSetters.bind(program));
