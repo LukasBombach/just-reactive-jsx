@@ -4,6 +4,7 @@ import { replace } from "ast/replace";
 import { unique } from "ast/filter";
 import * as asserts from "ast/assert";
 import * as to from "ast/map";
+import * as is from "ast/types";
 
 import type * as t from "@swc/types";
 
@@ -50,8 +51,14 @@ function replaceWithGetters(this: unknown, n: t.Identifier) {
   } as t.CallExpression);
 }
 
-function replaceWithSetters(this: unknown, n: t.Identifier) {
+function replaceWithSetters(this: unknown, n: t.AssignmentExpression | t.UpdateExpression) {
+  if (is.UpdateExpression(n)) {
+    n = to.AssignmentExpression(n);
+  }
+
   asserts.Node(this);
+  asserts.Identifier(n.left);
+
   replace(this, n, {
     type: "CallExpression",
     span: {
@@ -73,7 +80,7 @@ function replaceWithSetters(this: unknown, n: t.Identifier) {
           end: 0,
           ctxt: n.span.ctxt,
         },
-        value: n.value,
+        value: n.left.value,
         optional: false,
       },
       property: {
@@ -87,7 +94,7 @@ function replaceWithSetters(this: unknown, n: t.Identifier) {
         optional: false,
       },
     },
-    arguments: [],
+    arguments: [n.right],
   } as t.CallExpression);
 }
 

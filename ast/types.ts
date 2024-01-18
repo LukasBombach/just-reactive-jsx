@@ -54,6 +54,10 @@ export function Expression(n: Nullable<t.Node>): n is t.Expression {
   return n?.type === "Expression";
 }
 
+export function UpdateExpression(n: Nullable<t.Node>): n is t.UpdateExpression {
+  return n?.type === "UpdateExpression";
+}
+
 export function SameIdentifier(a: t.Identifier, b: t.Identifier): boolean {
   return a.value === b.value && a.span.ctxt === b.span.ctxt;
 }
