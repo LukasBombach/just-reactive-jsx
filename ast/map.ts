@@ -27,9 +27,9 @@ export function Reads(this: unknown, n: t.VariableDeclarator): t.Identifier[] {
   const usages = Usages.bind(this)(n);
   const assignments = findAll(this, "AssignmentExpression");
   const updateExpressions = findAll(this, "UpdateExpression");
-  return usages.filter(u => {
-    for (const a of assignments) if (a.left === u) return false;
-    for (const u of updateExpressions) if (u.argument === u) return false;
+  return usages.filter(i => {
+    for (const a of assignments) if (a.left === i) return false;
+    for (const u of updateExpressions) if (u.argument === i) return false;
     return true;
   });
 }

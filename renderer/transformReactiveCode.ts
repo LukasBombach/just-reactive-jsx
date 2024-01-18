@@ -52,12 +52,42 @@ function replaceWithGetters(this: unknown, n: t.Identifier) {
 }
 
 function replaceWithSetters(this: unknown, n: t.AssignmentExpression | t.UpdateExpression) {
-  if (is.UpdateExpression(n)) {
-    n = to.AssignmentExpression(n);
-  }
+  const name = is.AssignmentExpression(n) ? n.left : n.argument;
 
   asserts.Node(this);
-  asserts.Identifier(n.left);
+  asserts.Identifier(name);
+
+  const expression = is.AssignmentExpression(n)
+    ? n.right
+    : {
+        type: "BinaryExpression",
+        span: {
+          start: 0,
+          end: 0,
+          ctxt: n.span.ctxt,
+        },
+        operator: n.operator === "++" ? "+" : "-",
+        left: {
+          type: "CallExpression",
+          callee: {
+            type: "Identifier",
+            value: name.value,
+            span: { start: 0, end: 0, ctxt: n.span.ctxt },
+            optional: false,
+          },
+          arguments: [],
+          span: { start: 0, end: 0, ctxt: n.span.ctxt },
+        },
+        right: {
+          type: "NumericLiteral",
+          span: {
+            start: 0,
+            end: 0,
+            ctxt: n.span.ctxt,
+          },
+          value: 1,
+        },
+      };
 
   replace(this, n, {
     type: "CallExpression",
@@ -80,7 +110,7 @@ function replaceWithSetters(this: unknown, n: t.AssignmentExpression | t.UpdateE
           end: 0,
           ctxt: n.span.ctxt,
         },
-        value: n.left.value,
+        value: name.value,
         optional: false,
       },
       property: {
@@ -94,7 +124,7 @@ function replaceWithSetters(this: unknown, n: t.AssignmentExpression | t.UpdateE
         optional: false,
       },
     },
-    arguments: [{ expression: n.right }],
+    arguments: [{ expression: expression }],
   } as t.CallExpression);
 }
 
