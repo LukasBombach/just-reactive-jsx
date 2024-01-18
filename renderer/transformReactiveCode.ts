@@ -20,14 +20,16 @@ export async function transformReactiveCode(input: string): Promise<string> {
     .flatMap(to.Declarators.bind(program))
     .filter(unique);
 
-  const usages = declarators.flatMap(to.Reads.bind(program));
+  const reads = declarators.flatMap(to.Reads.bind(program));
   const updates = declarators.flatMap(to.Updates.bind(program));
 
   injectImportToMaverick(program);
 
+  console.log(reads.length);
+
   declarators.forEach(replaceWithSignal);
-  usages.forEach(replaceWithGetters.bind(program));
-  updates.forEach(replaceWithSetters);
+  reads.forEach(replaceWithGetters.bind(program));
+  updates.forEach(replaceWithSetters.bind(program));
 
   return await print(program).then(o => o.code);
 }
@@ -94,7 +96,7 @@ function replaceWithSetters(this: unknown, n: t.AssignmentExpression | t.UpdateE
         optional: false,
       },
     },
-    arguments: [n.right],
+    arguments: [{ expression: n.right }],
   } as t.CallExpression);
 }
 

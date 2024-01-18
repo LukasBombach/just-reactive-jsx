@@ -28,8 +28,8 @@ export function Reads(this: unknown, n: t.VariableDeclarator): t.Identifier[] {
   const assignments = findAll(this, "AssignmentExpression");
   const updateExpressions = findAll(this, "UpdateExpression");
   return usages.filter(u => {
-    for (const a of assignments) if (isSameIdentifier(a.left, u)) return false;
-    for (const u of updateExpressions) if (isSameIdentifier(u.argument, u)) return false;
+    for (const a of assignments) if (a.left === u) return false;
+    for (const u of updateExpressions) if (u.argument === u) return false;
     return true;
   });
 }
