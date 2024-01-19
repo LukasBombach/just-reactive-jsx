@@ -1,7 +1,5 @@
-import { signal } from "@maverick-js/signals";
-
 export default function Page() {
-  const count = signal(0);
+  let count = 0;
 
   return (
     <html lang="en">
@@ -17,7 +15,7 @@ export default function Page() {
       <body>
         <section>
           <input value={count} />
-          <button onClick={() => count.set(count() + 1)}>increase</button>
+          <button onClick={() => count++}>increase</button>
         </section>
         <script src="index.js" />
       </body>
