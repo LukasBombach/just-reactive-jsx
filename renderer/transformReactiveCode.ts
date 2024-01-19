@@ -51,6 +51,9 @@ function replaceWithGetters(this: unknown, n: t.Identifier) {
   } as t.CallExpression);
 }
 
+/**
+ * todo x += 1 outputs x.set(1) instead of x.set(x + 1)
+ */
 function replaceWithSetters(this: unknown, n: t.AssignmentExpression | t.UpdateExpression) {
   const name = is.AssignmentExpression(n) ? n.left : n.argument;
 
