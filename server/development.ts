@@ -45,7 +45,7 @@ export async function startDevServer() {
     .get(
       "/hydrate.js",
       () =>
-        new Response(`import Page from "./index.js";\nconsole.log(Page());`, {
+        new Response(`import Page from "./index.js";console.log(Page());`, {
           headers: { "Content-Type": "application/javascript" },
         })
     )
