@@ -17,7 +17,7 @@ export default function Page() {
           <input value={count} />
           <button onClick={() => count++}>increase</button>
         </section>
-        <script src="index.js" />
+        <script type="module" src="hydrate.js" async />
       </body>
     </html>
   );

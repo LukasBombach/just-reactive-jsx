@@ -41,6 +41,15 @@ export async function startDevServer() {
     // Serve static assets
     .get("/index.js", () => Bun.file("build/client/index.js"))
 
+    // Dev code: hydrate.js
+    .get(
+      "/hydrate.js",
+      () =>
+        new Response(`import Page from "./index.js";\nconsole.log(Page());`, {
+          headers: { "Content-Type": "application/javascript" },
+        })
+    )
+
     // Start server
     .listen(3000);
 }
