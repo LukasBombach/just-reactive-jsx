@@ -9,8 +9,9 @@ import * as is from "ast/types";
 import type * as t from "@swc/types";
 
 /**
- * todo maybe use recast
+ * todo maybe use recast / ast-types
  * @see https://www.npmjs.com/package/recast
+ * @see https://github.com/benjamn/ast-types
  */
 export async function transformReactiveCode(input: string): Promise<string> {
   const program = await parse(input, { syntax: "typescript", tsx: true });
