@@ -1,4 +1,5 @@
 import { parse, print } from "@swc/core";
+import { transformReactiveCode } from "renderer/transformReactiveCode";
 import { replaceJsx } from "../hydration_test/toArray";
 
 import type { BunPlugin } from "bun";
@@ -12,20 +13,21 @@ function dist(fileName?: string) {
 }
 
 export async function compileClientBundle(file: string): Promise<void> {
-  const { logs } = await Bun.build({ entrypoints: [app(file)], outdir: "build/client", plugins: [hydraitionCode()] });
+  const { logs } = await Bun.build({ entrypoints: [app(file)], outdir: "build/client", plugins: [clientJsPlugin()] });
   logs.forEach(log => console.warn(log));
 }
 
-function hydraitionCode(): BunPlugin {
+function clientJsPlugin(): BunPlugin {
   return {
-    name: "Component Hydration Loader",
+    name: "Client JS Plugin",
     target: "browser",
     async setup(build) {
       build.onLoad({ filter: /\.(tsx)$/ }, async ({ path }) => {
-        const program = await parse(await Bun.file(path).text(), { syntax: "typescript", tsx: true });
+        const source = await Bun.file(path).text();
+        const reactive = await transformReactiveCode(source);
+        const program = await parse(reactive, { syntax: "ecmascript", jsx: true });
         await replaceJsx(program);
         const output = await print(program);
-        console.log(output.code);
         return { contents: output.code, loader: "jsx" };
       });
     },
