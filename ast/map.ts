@@ -48,6 +48,11 @@ export function Updates(this: unknown, n: t.VariableDeclarator): (t.AssignmentEx
     .filter(is.NonNullable);
 }
 
+// export function JSXElement(this:unknown, n: t.Node): t.JSXElement {
+//   asserts.Node(this);
+//   const jsxElements = findAll(this, "JSXElement");
+// }
+
 function isSameIdentifier(a: t.Node, b: t.Node): boolean {
   return is.Identifier(a) && is.Identifier(b) && a.value === b.value && a.span.ctxt === b.span.ctxt;
 }
