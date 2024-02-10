@@ -25,6 +25,11 @@ export async function addHydrationMarkers(input: string): Promise<string> {
         if (
           opening.attributes.filter(is.JSXAttribute).some(attr => {
             const identifiers = findAll(attr, "Identifier");
+            console.log(
+              identifiers.some(id => is.SameIdentifier(id, usage)),
+              identifiers.map(i => i.value)
+            );
+
             return identifiers.some(id => is.SameIdentifier(id, usage));
           })
         ) {
@@ -32,11 +37,11 @@ export async function addHydrationMarkers(input: string): Promise<string> {
         }
 
         // todo jsx children
-        console.warn("remember: not teated jsx children yet");
+        // console.warn("remember: not teated jsx children yet");
       }
     })
-    .filter(is.NonNullable)
-    .filter(unique);
+    .filter(is.NonNullable);
+  // .filter(unique);
 
   console.log(finalElements);
 
