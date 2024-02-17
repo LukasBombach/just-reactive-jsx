@@ -13,8 +13,11 @@ function getEventHandlers(ast: ASTNode): NodePath<namedTypes.JSXAttribute, any>[
     visitJSXAttribute(path) {
       const name = typeof path.node.name.name === "string" ? path.node.name.name : path.node.name.name.name;
       if (name.match(/^on[A-Z]/)) eventHandlers.push(path);
+      return false;
     },
   });
 
   return eventHandlers;
 }
+
+console.log(getEventHandlers(ast).map(path => print(path.node).code));
