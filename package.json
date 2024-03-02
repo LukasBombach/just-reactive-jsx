@@ -3,6 +3,7 @@
   "private": true,
   "scripts": {
     "dev": "bun --watch cli/index.ts dev",
+    "test": "vitest",
     "hydration_test": "bun --watch hydration_test/server.ts"
   },
   "devDependencies": {
